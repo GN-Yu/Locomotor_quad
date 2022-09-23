@@ -1,0 +1,9 @@
+g++ -O2 walk-nocpg.cc -o walk
+rm data/*
+for (( v=1; v<=100; v++ ))
+do
+	./walk -v $v $v -T 100 -dt 100 -u -1 -1 -w 0 10 -ts .001 -s 10 10 -r .5 -m .02 -lr -t -o data/dur$v >/dev/null 2>/dev/null &
+done
+wait
+echo "."
+gnuplot map.plot

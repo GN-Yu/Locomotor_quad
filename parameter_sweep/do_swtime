@@ -1,0 +1,9 @@
+g++ -O2 quad_loco.cc -o walk
+rm data/*
+for (( v=1; v<=100; v++ ))
+do
+	./walk -T 100 -v0 $v -v1 $v -Gu0 -1 -Gu1 -1 -kv0 1000 -kv1 1000 -tsw0 .01 -tsw1 .15 -out_swp data/dur$v ini/force$v >/dev/null 2>/dev/null &
+done
+wait
+echo "."
+gnuplot map.plot

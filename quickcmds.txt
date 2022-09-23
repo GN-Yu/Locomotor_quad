@@ -1,0 +1,259 @@
+!g++ -O2 MyWalk.cc -o MyWalk.o && ./MyWalk.o >dat 2>plotcmd 
+set term png size 600,800
+set size ratio -1
+unset key
+set grid
+unset label; unset arrow; unset object; load "plotcmd";
+!ffmpeg -r 25 -i tmp%d.png -y -hide_banner -loglevel error MyWalk1.mp4
+!rm tmp*
+
+//!g++ -O2 mywalk.cc -o mywalk.o && ./mywalk.o >dat 2>plotcmd 
+//!g++ -O2 backup.cc -o backup.o && ./backup.o >dat 2>plotcmd 
+//!g++ -O2 testfile.cc -o testfile.o && ./testfile.o
+
+> !g++ -O2 walk2.cc -o walk2 && ./walk2 -v 25 -T 2 -dt .001 -w .9 -u .1 >dat 2>ppp
+
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 2 -dt .001 -w .9 -u .1 >dat 2>ppp
+
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 3 -dt .001 -v0 1 -v1 30 -w .99 -u .01 >dat 2>ppp
+
+!g++ -O2 betterwalk.cc -o betterwalk && ./betterwalk -v 25 -T 2 -dt .001 -w .9 -u .1 >dat 2>ppp
+
+gnuplot>set size ratio -1; set xrange [*:*]; set yrange [*:*]; load 'ppp'
+
+plot "strideinfo" using 2:($3!=0 ?$ 4:NaN)
+
+
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 2 -dt .001 -v0 25 -w .95 -u .05 -i >dat 2>ppp
+
+plot "strideinfo" using (1/$6):4
+
+plot "strideinfo" u ($6):($3==1 ?$ 4:NaN), "strideinfo" u ($6):($3==1 ?$ 5:NaN)
+
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 3 -dt .001 -v0 6.7 -v1 6.7 -w .99999 -u 0 >dat 2>ppp
+
+
+
+Final test: walk to trot
+
+preset:
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 3 -dt .001 -v0 6.8 -v1 6.8 -Gu0 .01 -Gu1 .01 -Gv0 .99999 -Gv1 .99999 >dat 2>ppp
+
+run:
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 30 -dt .001 -v0 6.8 -v1 33.5 -Gu0 .01 -Gu1 .16 -Gv0 .99999 -Gv1 .94 -i >dat 2>ppp
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 30 -dt .001 -v0 6.8 -v1 38 -Gu0 .01 -Gu1 .05 -Gv0 .99999 -Gv1 .95 -i >dat 2>ppp
+
+plot 1 (frequency-velocity):
+plot "strideinfo" u 2:6 title 'model sfv'
+
+plot 2 (swing/stance-frequency):
+plot "strideinfo" u ($6):($3==1 ?$ 4:NaN) title 'model swsf', "strideinfo" u ($6):($3==1 ?$ 5:NaN) title 'model stsf'
+
+plot 3 (duty factor-velocity):
+plot "strideinfo" u 2:($3==1? ($5 * $6):NaN) title 'model dfv'
+
+plot 4 (stide length-velocity):
+plot "strideinfo" u ($6/$2):6 title 'model slv'
+
+plot 5 (total force-time):
+plot "dat" u 1:6 w lp
+
+
+
+
+
+test 020422: trot
+
+preset1: 
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 2 -dt .001 -v0 20 -v1 20 -Gu0 .1 -Gu1 .1 -Gv0 .98 -Gv1 .98 >dat 2>ppp
+
+preset2:
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 40 -dt .001 -v0 20 -v1 38 -Gu0 .1 -Gu1 .13 -Gv0 .98 -Gv1 .97 -i >dat 2>ppp
+
+
+
+test 0208: walk
+
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 3 -dt .001 -v0 9 -v1 9 -Gu0 .01 -Gu1 .01 -Gv0 .99 -Gv1 .99 >dat 2>ppp
+
+
+almost good:
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 20 -dt .001 -v0 20 -v1 39 -Gu0 .1 -Gu1 .20 -Gv0 .98 -Gv1 .95 -i >dat 2>ppp
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 20 -dt .001 -v0 20 -v1 43 -Gu0 .1 -Gu1 .2 -Gv0 .98 -Gv1 .95 -i >dat 2>ppp
+
+
+
+test 022322: no correction
+preset: 
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 2 -dt .001 -v0 20 -v1 20 -Gu0 .1 -Gu1 .1 -Gv0 .98 -Gv1 .98 -newi >dat 2>ppp
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 15 -dt .001 -v0 20 -v1 5 -Gu0 .1 -Gu1 .01 -Gv0 .98 -Gv1 .99999 -i -newi >dat 2>ppp
+
+simpler preset:
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 3 -dt .001 -v0 5 -v1 5 -Gu0 .01 -Gu1 .01 -Gv0 .99999 -Gv1 .99999 -newi >dat 2>ppp
+
+run: 
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 20 -dt .001 -v0 5 -v1 40 -Gu0 .01 -Gu1 .2 -Gv0 .99999 -Gv1 .95 -i >dat 2>ppp
+
+post run:
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 20 -dt .001 -v0 5 -v1 40 -Gu0 .01 -Gu1 .2 -Gv0 .99999 -Gv1 .95 -i >dat 2>ppp
+
+
+0224:
+no correction original:
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 20 -dt .001 -v0 5 -v1 60 -Gu0 .01 -Gu1 .2 -Gv0 .99999 -Gv1 .95 -i >dat 2>ppp
+
+
+
+
+
+0227 animation generator:
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 2 -dt .001 -v0 20 -v1 20 -Gu0 .1 -Gu1 .1 -Gv0 .98 -Gv1 .98 -newi >dat 2>ppp
+
+low speed:
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 15 -dt .001 -v0 20 -v1 5 -Gu0 .1 -Gu1 .01 -Gv0 .98 -Gv1 .99999 -i -newi >dat 2>ppp
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 2 -dt .001 -v0 5 -v1 5 -Gu0 .01 -Gu1 .01 -Gv0 .99999 -Gv1 .99999 -i >dat 2>ppp
+
+high speed:
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 20 -dt .001 -v0 20 -v1 50 -Gu0 .1 -Gu1 .2 -Gv0 .98 -Gv1 .95 -newi >dat 2>ppp
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 0.6 -dt .001 -v0 50 -v1 50 -Gu0 .2 -Gu1 .2 -Gv0 .95 -Gv1 .95 -i >dat 2>ppp
+
+
+
+0311
+
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 20 -dt .001 -v0 5 -v1 47 -Gu0 .01 -Gu1 .25 -kv0 .5 -kv1 15 -i >dat 2>ppp
+
+
+
+0323:
+
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 20 -dt .001 -v0 5 -v1 47 -Gu0 .01 -Gu1 .25 -kv0 .5 -kv1 15 -newi >dat 2>ppp
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 5 -dt .001 -v0 47 -v1 47 -Gu0 .25 -Gu1 .25 -kv0 15 -kv1 15 -i -newi >dat 2>ppp
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 20 -dt .001 -v0 47 -v1 5 -Gu0 .25 -Gu1 .08 -kv0 15 -kv1 0.8 -i >dat 2>ppp
+
+
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 20 -dt .001 -v0 5 -v1 46 -Gu0 .07 -Gu1 .25 -kv0 .7 -kv1 17.5 -i >dat 2>ppp
+
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 20 -dt .001 -v0 5 -v1 31 -Gu0 .07 -Gu1 .25 -kv0 .7 -kv1 8.7 -i >dat 2>ppp
+
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 20 -dt .001 -v0 5 -v1 30 -Gu0 .07 -Gu1 .25 -kv0 .7 -kv1 8 -i >dat 2>ppp
+
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 20 -dt .001 -v0 30 -v1 5 -Gu0 .25 -Gu1 .07 -kv0 8 -kv1 1 -i >dat 2>ppp
+
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 20 -dt .001 -v0 5 -v1 30 -Gu0 .07 -Gu1 .25 -kv0 0.8 -kv1 8.3 -i >dat 2>ppp
+
+
+0325
+
+at l=4.1,
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 20 -dt .001 -v0 5 -v1 30 -Gu0 .01 -Gu1 .25 -kv0 .5 -kv1 12 -newi >dat 2>ppp
+
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 10 -dt .001 -v0 30 -v1 5 -Gu0 .25 -Gu1 .095 -kv0 12 -kv1 0.9 -i >dat 2>ppp
+
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 10 -dt .001 -v0 30 -v1 7 -Gu0 .25 -Gu1 .132 -kv0 12 -kv1 1.1 -i >dat 2>ppp
+
+bifurction:
+
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 20 -dt .001 -v0 5 -v1 30 -Gu0 .01 -Gu1 .25 -kv0 .5 -kv1 12 -slowi >dat 2>ppp
+
+
+not stable at high speed:
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 5 -dt .001 -v0 30 -v1 30 -Gu0 .25 -Gu1 .25 -kv0 12 -kv1 12 -fasti >dat 2>ppp
+
+
+
+
+0408:
+
+!g++ -O2 swing_time_model.cc -o swing_time_model && ./swing_time_model -T 10 -dt .001 -v0 10 -v1 10 -Gu0 .01 -Gu1 .01 -tsw0 0.1 -tsw1 0.1 >tswdat 2>tswcmd
+
+!g++ -O2 swing_time_model.cc -o swing_time_model && ./swing_time_model -T 10 -dt .001 -v0 7 -v1 7 -Gu0 .0001 -Gu1 .0001 -tsw0 0.02 -tsw1 0.02 >tswdat 2>tswcmd
+
+
+
+0415:
+commented same side inhibitions,
+at l=4.1,
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 20 -dt .001 -v0 5 -v1 30 -Gu0 .01 -Gu1 .25 -kv0 .5 -kv1 12 -newi >dat 2>ppp
+
+a good approximation:
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 15 -dt .001 -v0 5 -v1 30 -Gu0 .06 -Gu1 .25 -kv0 1.2 -kv1 8.5 -newi >dat 2>ppp
+
+
+0420:
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 5 -dt .001 -v0 5 -v1 5 -Gu0 .06 -Gu1 .06 -kv0 1.2 -kv1 1.2 -slowi >dat 2>ppp
+
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 15 -dt .001 -v0 5 -v1 15 -Gu0 .06 -Gu1 .25 -kv0 1.2 -kv1 5 -slowi -newi >dat 2>ppp
+
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 5 -dt .001 -v0 15 -v1 15 -Gu0 .25 -Gu1 .25 -kv0 5 -kv1 5 -fasti >dat 2>ppp
+
+
+!g++ -O2 Mouse_trot.cc -o Mouse_trot && ./Mouse_trot -T 5 -dt .001 -v0 30 -v1 30 -Gu0 .25 -Gu1 .25 -kv0 12 -kv1 12 -fasti >d
+at 2>ppp
+
+
+!g++ -O2 Mouse_trot.cc -o Mouse_trot && ./Mouse_trot -T 20 -dt .001 -v0 5 -v1 30 -Gu0 .01 -Gu1 .25 -kv0 .5 -kv1 12 -newfasti >dat 2>ppp
+
+!g++ -O2 Mouse_pace.cc -o Mouse_pace && ./Mouse_pace -T 20 -dt .001 -v0 5 -v1 30 -Gu0 .01 -Gu1 .25 -kv0 .5 -kv1 12 -newi >dat 2>ppp
+
+!g++ -O2 Mouse_pace.cc -o Mouse_pace && ./Mouse_pace -T 20 -dt .001 -v0 5 -v1 30 -Gu0 .01 -Gu1 .25 -kv0 .5 -kv1 12 -slowi >dat 2>ppp
+
+
+
+
+!g++ -O2 walk2.cc -o walk2 && ./walk2 -T 20 -dt .001 -v0 5 -v1 30 -Gu0 .01 -Gu1 .25 -kv0 .5 -kv1 12 >dat 2>ppp
+
+
+!g++ -O2 swingtime0522.cc -o swingtime0522 && ./swingtime0522 -T 20 -dt .001 -v0 5 -v1 30 -Gu0 .01 -Gu1 .25 -kv0 .5 -kv1 12 -tsw0 .1 -tsw1 .05 >dat 2>ppp
+
+
+!g++ -O2 CPG0522.cc -o CPG0522 && ./CPG0522 -T 20 -dt .001 -v0 5 -v1 30 -Gu0 .01 -Gu1 .25 -kv0 .5 -kv1 12 -tsw0 .01 -tsw1 .01 >dat 2>ppp
+
+!g++ -O2 swingtime0522.cc -o swingtime0522 && ./swingtime0522 -T 5 -dt .001 -v0 25 -v1 25 -Gu0 .15 -Gu1 .15 -tsw0 .05 -tsw1 .15 -i >dat 2>ppp
+
+!g++ -O2 Molkov_nocpg.cc -o Molkov_nocpg && ./Molkov_nocpg -T 5 -dt .001 -v 25 25 -u .15 .15 -s .05 .15 -ts .001 -r .1 -t -q >dat 2>ppp
+
+!g++ -O2 CPG0530.cc -o CPG0530 && ./CPG0530 -T 5 -dt .001 -v0 25 -v1 25 -Gu0 .15 -Gu1 .15 -tsw0 .05 -tsw1 .15 -i >dat 2>ppp
+
+!g++ -O2 CPG0530.cc -o CPG0530 && ./CPG0530 -T 20 -dt .001 -v0 10 -v1 25 -Gu0 .05 -Gu1 .25 -tsw0 .1 -tsw1 .05 -cor >dat 2>ppp
+
+!g++ -O2 nocpg.cc -o nocpg && ./nocpg -T 5 -dt .001 -v 25 25 -u .15 .15 -s .05 .15 -ts .001 -r .1 -t -q >dat 2>ppp
+
+!g++ -O2 CPG0530.cc -o CPG0530 && ./CPG0530 -T 20 -dt .001 -v0 25 -v1 10 -Gu0 .25 -Gu1 .05 -tsw0 .05 -tsw1 .15 -cor >dat 2>ppp
+
+!g++ -O2 CPG0530.cc -o CPG0530 && ./CPG0530 -T 10 -dt .001 -v0 25 -v1 25 -Gu0 .25 -Gu1 .25 -tsw0 .05 -tsw1 .05 -cor -fasti >dat 2>ppp
+
+!g++ -O2 CPG0530.cc -o CPG0530 && ./CPG0530 -T 20 -dt .001 -v0 5 -v1 30 -Gu0 .01 -Gu1 .25 -kv0 .5 -kv1 12 -tsw0 .15 -tsw1 .05 >dat 2>ppp
+
+
+update 0627: all -dt changed to -fps
+
+!g++ -O2 swingtime0522.cc -o swingtime0522 && ./swingtime0522 -T 20 -fps 500 -v0 30 -v1 5 -Gu0 .25 -Gu1 .01 -tsw0 .05 -tsw1 .1 -fasti >dat 2>ppp
+
+!g++ -O2 swingtime0522.cc -o swingtime0522 && ./swingtime0522 -T 10 -fps 500 -v0 25 -v1 25 -Gu0 .25 -Gu1 .25 -kv0 7 -kv1 7 -tsw0 10 -tsw1 10 -fasti >dat 2>ppp
+
+>chmod +x do
+create subfolder "data"
+run
+>./do
+
+!g++ -O2 swingtime0522.cc -o swingtime0522 && ./swingtime0522 -T 20 -fps 500 -v0 5 -v1 30 -Gu0 .01 -Gu1 .25 -kv0 .5 -kv1 12 -tsw0 .1 -tsw1 .05 >dat 2>ppp
+
+!g++ -O2 swingtime0522.cc -o swingtime0522 && ./swingtime0522 -T 20 -fps 1000 -v0 5 -v1 30 -Gu0 .01 -Gu1 .25 -kv0 .5 -kv1 12 -tsw0 10 -tsw1 10 >dat 2>ppp
+
+
+!g++ -O2 swingtime0714.cc -o swingtime0714 && ./swingtime0714 -T 20 -fps 500 -v0 5 -v1 30 -Gu0 .01 -Gu1 .25 -kv0 .5 -kv1 12 -tsw0 .1 -tsw1 .05 >dat 2>ppp
+
+
+!g++ -O2 swingtime0714.cc -o swingtime0714 && ./swingtime0714 -T 20 -fps 1000 -v0 5 -v1 30 -Gu0 .01 -Gu1 .25 -kv0 .5 -kv1 12 -tsw0 10 -tsw1 10 >dat 2>ppp
+
+
+!g++ -O2 swingtime0714.cc -o swingtime0714 && ./swingtime0714 -T 20 -fps 500 -v0 15 -v1 15 -Gu0 -10 -Gu1 -10 -kv0 1000 -kv1 1000 -tsw0 .01 -tsw1 .1 >dat 2>ppp
+
+quad_loco
+
+quad_loco
+
+!g++ -O2 quad_loco.cc -o quad_loco && ./quad_loco -T 20 -fps 500 -v0 5 -v1 30 -Gu0 .01 -Gu1 .25 -kv0 .5 -kv1 12 -tsw0 .1 -tsw1 .05 >dat 2>ppp
+
+!g++ -O2 quad_loco.cc -o quad_loco && ./quad_loco -T 20 -fps 500 -v0 20 -v1 20 -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .001 -tsw1 .1 >dat 2>ppp

@@ -1,0 +1,9 @@
+g++ -O2 quad_loco.cc -o walk
+rm ini/*
+for v in $(seq 1 0.25 40)
+do
+	./walk -T 20 -v0 1 -v1 $v  -Gu0 .1 -Gu1 .25 -kv0 .5 -kv1 10 -tsw0 10 -tsw1 10 -kr 0.3 -inhib -slowi -cookini ini/force$v >/dev/null 2>/dev/null &
+done
+wait
+echo "."
+#cat ini/force* > initial
