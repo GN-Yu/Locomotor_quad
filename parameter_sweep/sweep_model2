@@ -1,0 +1,11 @@
+g++ -O2 quad_loco.cc -o walk
+rm data/*
+for v in $(seq 1 0.5 40)
+do
+	./walk -T 100 -v0 $v -v1 $v -Gu0 -10 -Gu1 -10 -kv0 1 -kv1 15 -tsw0 1e10 -tsw1 1e10 -kr 0.5 -out_swp data/dur$v >/dev/null 2>/dev/null &
+	#./walk -T 200 -v0 $v -v1 $v -Gu0 -10 -Gu1 -10 -kv0 1000 -kv1 1000 -tsw0 .01 -tsw1 .1 -kr 0.3 -out_swp data/dur$v -swpini ini/force$v >/dev/null 2>/dev/null &
+done
+wait
+echo "."
+gnuplot kv_F0_df.plot
+#gnuplot kv_v_df.plot
