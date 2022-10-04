@@ -24,7 +24,7 @@ double I=L*L/3; // moment of inertia over mass
 double tau=.25;
 
 double DM[5]={0,1*L,1*L,1*L,1*L};	//max leg length
-static int sw[5]={0,1,0,0,1};
+static int sw[5]={0,0,0,0,0};
 
 int contraside[5]={0,2,1,4,3};
 int homoside[5]={0,3,4,1,2};
@@ -163,10 +163,10 @@ int main(int argc,char** argv)
 		yhl0=yh+lh*cos(theta), yhr0=yh-lh*cos(theta);
 
 		double qq=L/sqrt(2)/2;
-		xfl=xfl0, yfl=yfl0;
-		xfr=xfr0-qq, yfr=yfr0-qq;
-		xhl=xhl0-qq, yhl=yhl0-qq+.001;
-		xhr=xhr0, yhr=yhr0;
+		// xfl=xfl0, yfl=yfl0;
+		// xfr=xfr0-qq, yfr=yfr0-qq;
+		// xhl=xhl0-qq, yhl=yhl0-qq+.001;
+		// xhr=xhr0, yhr=yhr0;
 
 		// double pp=L/sqrt(2)/2+0.2;
 		// xfl=xfl0, yfl=yfl0;
@@ -174,10 +174,10 @@ int main(int argc,char** argv)
 		// xhl=xhl0-pp, yhl=yhl0-pp;
 		// xhr=xhr0, yhr=yhr0;
 
-		// xfl=xfl0, yfl=yfl0;
-		// xfr=xfr0-qq, yfr=yfr0-qq;
-		// xhl=xhl0, yhl=yhl0;
-		// xhr=xhr0-qq, yhr=yhr0-qq;
+		xfl=xfl0, yfl=yfl0;
+		xfr=xfr0-qq, yfr=yfr0-qq;
+		xhl=xhl0, yhl=yhl0;
+		xhr=xhr0-qq, yhr=yhr0-qq;
 
 		// xfl=xfl0-3*cos(theta); yfl=yfl0-3*sin(theta);
 		// xfr=xfr0; yfr=yfr0;

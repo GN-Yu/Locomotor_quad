@@ -4,9 +4,9 @@ set key
 set cbrange [50:100]
 set xlabel "Balance Parameter"
 set ylabel "Nomalized Force"
-set xrange [0:15]
+set xrange [0:10]
 set yrange [0:40]
-set xtics 0,2,15
+set xtics 0,1,10
 set ytics 0,5,40 
 set title "Duty Factor (for FL)"
 
