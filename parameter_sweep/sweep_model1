@@ -2,10 +2,10 @@ g++ -O2 quad_loco.cc -o walk.o
 rm data/*
 for v in $(seq 1 0.35 40)
 do
-	./walk.o -T 200 -v0 $v -v1 $v -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .001 -tsw1 .1 -kr 0.5 -out_swp data/dur$v >/dev/null 2>/dev/null &
-	#./walk.o -T 200 -v0 $v -v1 $v -Gu0 -10 -Gu1 -10 -kv0 1000 -kv1 1000 -tsw0 .01 -tsw1 .1 -kr 0.3 -out_swp data/dur$v -swpini ini/force$v >/dev/null 2>/dev/null &
+	./walk.o -T 200 -v0 $v -v1 $v -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .001 -tsw1 .1 -kr 0.5 -presetTROT -out_swp data/dur$v >/dev/null 2>/dev/null &
+	#./walk.o -T 200 -v0 $v -v1 $v -Gu0 -10 -Gu1 -10 -kv0 1000 -kv1 1000 -tsw0 .01 -tsw1 .1 -kr 0.3 -presetTROT -out_swp data/dur$v -swpini ini/force$v >/dev/null 2>/dev/null &
 done
 wait
-echo "."
-#gnuplot t_F0_df.plot
-gnuplot t_v_df.plot
+echo "left to right sweep done"
+#gnuplot DFplot1_kv_F0.plot
+#gnuplot DFplot1_t_v.plot

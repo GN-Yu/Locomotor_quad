@@ -45,6 +45,10 @@ int main(int argc,char** argv)
 	int ani_out=0;
 	int stridedata_out=0;
 	int cookini=0;
+	int iniWALK=0;
+	int iniTROT=0;
+	int iniPACE=0;
+	int iniRANDOM=0;
 	char fdur[50]="dur";
 	char ini_name[50]="ini";
 
@@ -116,8 +120,12 @@ int main(int argc,char** argv)
 		else if(strcmp(argv[i],"-newslowi")==0) {newini=2;}
 		else if(strcmp(argv[i],"-newfasti")==0) {newini=3;}
 		else if(strcmp(argv[i],"-cookini")==0) {strcpy(inifiles[1],argv[++i]); newini=1;}
-		else if(strcmp(argv[i],"-out_swp")==0) {strcpy(fdur,argv[++i]); stridedata_out=1;}
 		else if(strcmp(argv[i],"-swpini")==0) {strcpy(inifiles[1],argv[++i]); ini=1;}
+		else if(strcmp(argv[i],"-presetWALK")==0) {iniWALK=1;}
+		else if(strcmp(argv[i],"-presetPACE")==0) {iniPACE=1;}
+		else if(strcmp(argv[i],"-presetTROT")==0) {iniTROT=1;}
+		//else if(strcmp(argv[i],"-presetRANDOM")==0) {iniRANDOM=1;}
+		else if(strcmp(argv[i],"-out_swp")==0) {strcpy(fdur,argv[++i]); stridedata_out=1;}
 		else return 1;
 	}
 
@@ -162,20 +170,39 @@ int main(int argc,char** argv)
 		yhl0=yh+lh*cos(theta), yhr0=yh-lh*cos(theta);
 
 		double qq=L/sqrt(2)/2;
-		// xfl=xfl0, yfl=yfl0;
-		// xfr=xfr0-qq, yfr=yfr0-qq;
-		// xhl=xhl0-qq, yhl=yhl0-qq+.001;
-		// xhr=xhr0, yhr=yhr0;
 
-		xfl=xfl0, yfl=yfl0;
-		xfr=xfr0-qq, yfr=yfr0-qq;
-		xhl=xhl0, yhl=yhl0;
-		xhr=xhr0-qq, yhr=yhr0-qq;
-
-		// xfl=xfl0-3*cos(theta); yfl=yfl0-3*sin(theta);
-		// xfr=xfr0; yfr=yfr0;
-		// xhl=xhl0; yhl=yhl0;
-		// xhr=xhr0-3*cos(theta); yhr=yhr0-3*sin(theta);
+		if(iniWALK==1)
+		{
+			sw[1]=0; sw[2]=1; sw[3]=0; sw[4]=0; 
+			xfl=xfl0, yfl=yfl0;
+			xfr=xfr0-qq, yfr=yfr0-qq;
+			xhl=xhl0, yhl=yhl0;
+			xhr=xhr0-qq, yhr=yhr0-qq;
+		}
+		else if(iniTROT==1)
+		{
+			sw[1]=0; sw[2]=1; sw[3]=1; sw[4]=0; 
+			xfl=xfl0, yfl=yfl0;
+			xfr=xfr0-qq, yfr=yfr0-qq;
+			xhl=xhl0-qq, yhl=yhl0-qq+.001;
+			xhr=xhr0, yhr=yhr0;
+		}
+		else if(iniPACE==1)
+		{
+			sw[1]=0; sw[2]=1; sw[3]=0; sw[4]=1;
+			xfl=xfl0, yfl=yfl0;
+			xfr=xfr0-qq, yfr=yfr0-qq;
+			xhl=xhl0, yhl=yhl0;
+			xhr=xhr0-qq, yhr=yhr0-qq;
+		}
+		else
+		{
+			iniRANDOM=1;
+			xfl=xfl0-3*cos(theta); yfl=yfl0-3*sin(theta);
+			xfr=xfr0; yfr=yfr0;
+			xhl=xhl0; yhl=yhl0;
+			xhr=xhr0-3*cos(theta); yhr=yhr0-3*sin(theta);
+		}
 	}
 	else
 	{

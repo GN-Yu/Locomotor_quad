@@ -1,5 +1,5 @@
 set term gif
-set out "Duty_factor_temp.gif"
+set out "DFmodel1_t_v.gif"
 set key 
 set cbrange [50:100]
 set xlabel "Swing Duration"
