@@ -254,10 +254,10 @@ quad_loco
 
 quad_loco
 
-!g++ -O2 quad_loco.cc -o quad_loco && ./quad_loco -T 20 -fps 500 -v0 5 -v1 30 -Gu0 .01 -Gu1 .25 -kv0 .5 -kv1 12 -tsw0 .1 -tsw1 .05 >dat 2>ppp
+!g++ -O2 quad_loco.cc -o quad_loco.o && ./quad_loco.o -T 20 -fps 500 -v0 5 -v1 30 -Gu0 .01 -Gu1 .25 -kv0 .5 -kv1 12 -tsw0 .1 -tsw1 .05 >dat 2>ppp
 
-!g++ -O2 quad_loco.cc -o quad_loco && ./quad_loco -T 20 -fps 500 -v0 20 -v1 20 -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .001 -tsw1 .1 >dat 2>ppp
+!g++ -O2 quad_loco.cc -o quad_loco.o && ./quad_loco.o -T 20 -fps 500 -v0 20 -v1 20 -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .001 -tsw1 .1 >dat 2>ppp
 
 
 
-!g++ -O2 quad_loco.cc -o quad_loco && ./quad_loco -T 20 -fps 1000 -v0 15 -v1 25 -Gu0 -10 -Gu1 -10 -kv0 .5 -kv1 15 -tsw0 1000 -tsw1 1000 >dat 2>ppp
+!g++ -O2 quad_loco.cc -o quad_loco.o && ./quad_loco.o -T 20 -fps 1000 -v0 15 -v1 25 -Gu0 -10 -Gu1 -10 -kv0 .5 -kv1 15 -tsw0 1000 -tsw1 1000 >dat 2>ppp
