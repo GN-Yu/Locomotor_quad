@@ -24,7 +24,7 @@ double I=L*L/3; // moment of inertia over mass
 double tau=.25;
 
 double DM[5]={0,1*L,1*L,1*L,1*L};	//max leg length
-static int sw[5]={0,0,0,0,0};
+static int sw[5]={0,1,0,0,0};
 
 int contraside[5]={0,2,1,4,3};
 int homoside[5]={0,3,4,1,2};
@@ -45,6 +45,10 @@ int main(int argc,char** argv)
 	int ani_out=0;
 	int stridedata_out=0;
 	int cookini=0;
+	int iniWALK=0;
+	int iniTROT=0;
+	int iniPACE=0;
+	int iniRANDOM=0;
 	char fdur[50]="dur";
 	char ini_name[50]="ini";
 
@@ -117,8 +121,12 @@ int main(int argc,char** argv)
 		else if(strcmp(argv[i],"-newfasti")==0) {newini=3;}
 		else if(strcmp(argv[i],"-cookini")==0) {strcpy(inifiles[1],argv[++i]); newini=1;}
 		//else if(strcmp(argv[i],"-out_strideinfo")) {strcpy(fdur,"strideinfo"); stridedata_out=1;}
-		else if(strcmp(argv[i],"-out_swp")==0) {strcpy(fdur,argv[++i]); stridedata_out=1;}
 		else if(strcmp(argv[i],"-swpini")==0) {strcpy(inifiles[1],argv[++i]); ini=1;}
+		else if(strcmp(argv[i],"-presetWALK")==0) {iniWALK=1;}
+		else if(strcmp(argv[i],"-presetPACE")==0) {iniPACE=1;}
+		else if(strcmp(argv[i],"-presetTROT")==0) {iniTROT=1;}
+		//else if(strcmp(argv[i],"-presetRANDOM")==0) {iniRANDOM=1;}
+		else if(strcmp(argv[i],"-out_swp")==0) {strcpy(fdur,argv[++i]); stridedata_out=1;}
 		else return 1;
 	}
 
@@ -163,26 +171,39 @@ int main(int argc,char** argv)
 		yhl0=yh+lh*cos(theta), yhr0=yh-lh*cos(theta);
 
 		double qq=L/sqrt(2)/2;
-		// xfl=xfl0, yfl=yfl0;
-		// xfr=xfr0-qq, yfr=yfr0-qq;
-		// xhl=xhl0-qq, yhl=yhl0-qq+.001;
-		// xhr=xhr0, yhr=yhr0;
 
-		// double pp=L/sqrt(2)/2+0.2;
-		// xfl=xfl0, yfl=yfl0;
-		// xfr=xfr0-qq, yfr=yfr0-qq;
-		// xhl=xhl0-pp, yhl=yhl0-pp;
-		// xhr=xhr0, yhr=yhr0;
-
-		xfl=xfl0, yfl=yfl0;
-		xfr=xfr0-qq, yfr=yfr0-qq;
-		xhl=xhl0, yhl=yhl0;
-		xhr=xhr0-qq, yhr=yhr0-qq;
-
-		// xfl=xfl0-3*cos(theta); yfl=yfl0-3*sin(theta);
-		// xfr=xfr0; yfr=yfr0;
-		// xhl=xhl0; yhl=yhl0;
-		// xhr=xhr0-3*cos(theta); yhr=yhr0-3*sin(theta);
+		if(iniWALK==1)
+		{
+			sw[1]=0; sw[2]=1; sw[3]=0; sw[4]=0; 
+			xfl=xfl0, yfl=yfl0;
+			xfr=xfr0-qq, yfr=yfr0-qq;
+			xhl=xhl0, yhl=yhl0;
+			xhr=xhr0-qq, yhr=yhr0-qq;
+		}
+		else if(iniTROT==1)
+		{
+			sw[1]=0; sw[2]=1; sw[3]=1; sw[4]=0; 
+			xfl=xfl0, yfl=yfl0;
+			xfr=xfr0-qq, yfr=yfr0-qq;
+			xhl=xhl0-qq, yhl=yhl0-qq+.001;
+			xhr=xhr0, yhr=yhr0;
+		}
+		else if(iniPACE==1)
+		{
+			sw[1]=0; sw[2]=1; sw[3]=0; sw[4]=1;
+			xfl=xfl0, yfl=yfl0;
+			xfr=xfr0-qq, yfr=yfr0-qq;
+			xhl=xhl0, yhl=yhl0;
+			xhr=xhr0-qq, yhr=yhr0-qq;
+		}
+		else
+		{
+			iniRANDOM=1;
+			xfl=xfl0-3*cos(theta); yfl=yfl0-3*sin(theta);
+			xfr=xfr0; yfr=yfr0;
+			xhl=xhl0; yhl=yhl0;
+			xhr=xhr0-3*cos(theta); yhr=yhr0-3*sin(theta);
+		}
 	}
 	else
 	{
@@ -486,19 +507,30 @@ int main(int argc,char** argv)
 		double ttst[5]={};
 		static double stridepre=0;
 		static double stridetime=0;
+		static double dutyfacor_pre=0;
+		static double vvpre=0;
 		for(int k=1;k<=4;k++) if(swpre[k] && !sw[k])	//stop swing tracker
 		{
 			ttstpre[k]=t; 
 			ttsw[k]=t-ttswpre[k];
 			if(k==1) { stridetime=t-stridepre; stridepre=t; }
-			//if(stridedata_out==1 && stridepre!=0) out_timers<<t<<'\t'<<vv<<'\t'<<k<<'\t'<<ttsw[k]<<'\t'<<-1<<'\t'<<1/stridetime<<endl;
+			//if(stridepre!=0) out_timers<<t<<'\t'<<vv<<'\t'<<k<<'\t'<<ttsw[k]<<'\t'<<-1<<'\t'<<1/stridetime<<endl;
+			//if(stridepre!=0) out_timers<<k<<'\t'<<-1<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<dutyfactor<<endl;
 		}
 		for(int k=1;k<=4;k++) if(!swpre[k] && sw[k])	//start swing tracker
 		{
 			ttst[k]=t-ttstpre[k];
 			ttswpre[k]=t;
-			//if(stridepre!=0) out_timers<<Tswc<<'\t'<<F0<<'\t'<<k<<'\t'<<-1<<'\t'<<ttst[k]<<'\t'<<(100*ttst[k]/stridetime)<<endl;
-			if(stridepre!=0) out_timers<<t<<'\t'<<vv<<'\t'<<k<<'\t'<<-1<<'\t'<<ttst[k]<<'\t'<<1/stridetime<<endl;
+
+			double dutyfactor=(stridetime==0? 0:(100*ttst[k]/stridetime));
+
+			if(stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<ttsw[k]<<'\t'<<dutyfactor<<endl;
+			// Limb (k) is starts swing at time (t) with parameters (F0), (kv), (Gu) and (Tsw);
+			// it has velocity (vv), stance time (ttst[k]), previous swing time (ttsw[k]) and duty factor (dutyfactor).
+
+			//if(stridepre!=0 && abs(dutyfactor-dutyfacor_pre)<0.15 && abs(vv-vvpre)<0.5) out_timers<<Tswc<<'\t'<<F0<<'\t'<<vv<<'\t'<<k<<'\t'<<-1<<'\t'<<ttst[k]<<'\t'<<dutyfactor<<endl;
+			dutyfacor_pre=dutyfactor;
+			vvpre=vv;
 		}
 		for(int k=1;k<=4;k++) swpre[k]=sw[k];
 	}
