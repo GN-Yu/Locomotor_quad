@@ -32,6 +32,11 @@ int homoside[5]={0,3,4,1,2};
 char colors[5][10]={"black","brown","blue","red","green"};
 char inifiles[4][50]={"","ini","slowini","fastini"};
 
+// #define OUT(k,key) 
+// { 
+// 	double df=fabs(!sw[k]-(t-tpre[k])/(t-tpp[k])); if(t>10 && fabs(df-dfpre)>.05) return 0; out<<t<<'\t'<<par<<'\t'<<(k)<<'\t'<<sw[k]<<'\t'<<(t-tpre[k])<<'\t'<<(key)<<'\t'<<df<<'\t'<<hypot(vx,vy)<<'\t'<<Gv<<endl; tpp[k]=tpre[k]; tpre[k]=t; dfpre=df; 
+// }
+
 
 int main(int argc,char** argv)
 {
@@ -523,6 +528,8 @@ int main(int argc,char** argv)
 			ttswpre[k]=t;
 
 			double dutyfactor=(stridetime==0? 0:(100*ttst[k]/stridetime));
+
+			if(t>10 && dutyfactor-dutyfacor_pre>5) return 0;
 
 			if(stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<ttsw[k]<<'\t'<<dutyfactor<<endl;
 			// Limb (k) is starts swing at time (t) with parameters (F0), (kv), (Gu) and (Tsw);

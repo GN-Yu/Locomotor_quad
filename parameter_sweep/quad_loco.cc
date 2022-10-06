@@ -181,7 +181,7 @@ int main(int argc,char** argv)
 		}
 		else if(iniTROT==1)
 		{
-			sw[1]=0; sw[2]=1; sw[3]=1; sw[4]=0; 
+			sw[1]=1; sw[2]=0; sw[3]=0; sw[4]=1; 
 			xfl=xfl0, yfl=yfl0;
 			xfr=xfr0-qq, yfr=yfr0-qq;
 			xhl=xhl0-qq, yhl=yhl0-qq+.001;
@@ -189,7 +189,7 @@ int main(int argc,char** argv)
 		}
 		else if(iniPACE==1)
 		{
-			sw[1]=0; sw[2]=1; sw[3]=0; sw[4]=1;
+			sw[1]=1; sw[2]=0; sw[3]=1; sw[4]=0;
 			xfl=xfl0, yfl=yfl0;
 			xfr=xfr0-qq, yfr=yfr0-qq;
 			xhl=xhl0, yhl=yhl0;
@@ -507,13 +507,12 @@ int main(int argc,char** argv)
 		static double stridepre=0;
 		static double stridetime=0;
 		static double dutyfacor_pre=0;
-		double dutyfactor=0;
 		static double vvpre=0;
 		for(int k=1;k<=4;k++) if(swpre[k] && !sw[k])	//stop swing tracker
 		{
-			ttstpre[k]=t; 
 			ttsw[k]=t-ttswpre[k];
-			if(k==1) { stridetime=t-stridepre; stridepre=t; }
+			ttstpre[k]=t; 
+			if(k==1) { stridetime=t-stridepre; stridepre=t; }			
 			//if(stridedata_out==1 && stridepre!=0) out_timers<<t<<'\t'<<vv<<'\t'<<k<<'\t'<<ttsw[k]<<'\t'<<-1<<'\t'<<1/stridetime<<endl;
 		}
 		for(int k=1;k<=4;k++) if(!swpre[k] && sw[k])	//start swing tracker
@@ -521,9 +520,16 @@ int main(int argc,char** argv)
 			ttst[k]=t-ttstpre[k];
 			ttswpre[k]=t;
 
-			dutyfactor=(100*ttst[k]/stridetime);
+			double dutyfactor=(stridetime==0? 0:(100*ttst[k]/stridetime));
+
+			if(t>10 && dutyfactor-dutyfacor_pre>5) return 0;
+
+			if(t>1 && stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<(stridetime-ttst[k])<<'\t'<<dutyfactor<<endl;
+			//if(stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<ttsw[k]<<'\t'<<dutyfactor<<endl;
+			// Limb (k) is starts swing at time (t) with parameters (F0), (kv), (Gu) and (Tsw);
+			// it has velocity (vv), stance time (ttst[k]), previous swing time (ttsw[k]) and duty factor (dutyfactor).
 			
-			if(stridepre!=0) out_timers<<kv<<'\t'<<F0<<'\t'<<vv<<'\t'<<k<<'\t'<<-1<<'\t'<<ttst[k]<<'\t'<<dutyfactor<<endl;
+			//if(stridepre!=0) out_timers<<kv<<'\t'<<F0<<'\t'<<vv<<'\t'<<k<<'\t'<<-1<<'\t'<<ttst[k]<<'\t'<<dutyfactor<<endl;
 			//if(stridepre!=0 && abs(dutyfactor-dutyfacor_pre)<0.15 && abs(vv-vvpre)<0.5) out_timers<<Tswc<<'\t'<<F0<<'\t'<<vv<<'\t'<<k<<'\t'<<-1<<'\t'<<ttst[k]<<'\t'<<dutyfactor<<endl;
 			dutyfacor_pre=dutyfactor;
 			vvpre=vv;
