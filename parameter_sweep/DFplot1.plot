@@ -24,7 +24,7 @@ set xlabel "Swing Duration"
 set ylabel "Nomalized Force"
 set xrange [0:0.11]
 set yrange [0:40]
-set xtics 0,0.02,0.1
+set xtics 0,0.02,0.2
 set ytics 0,5,40 
 set title "Duty Factor (for FL)"
 
@@ -41,8 +41,8 @@ set xlabel "Swing Duration"
 set ylabel "COM Velocity"
 set xrange [0:0.11]
 set yrange [0:80]
-set xtics 0,0.02,0.12
-set ytics 0,20,80
+set xtics 0,0.02,0.2
+set ytics 0,10,80
 set title "Duty Factor (for FL)"
 
 #plot "<cat data/*" u 6:7:10 w p pt 5 lc palette z notitle
