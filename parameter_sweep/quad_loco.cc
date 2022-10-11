@@ -414,7 +414,7 @@ int main(int argc,char** argv)
 
 		for(int k=1;k<=4;k++) if(!sw[k]) if(GP[k]>load[k] && load[k]<Gu)
 		{
-			if(inhib) if(sw[contraside[k]]==1 || sw[homoside[k]]==1) {continue;}
+			//if(inhib) if(sw[contraside[k]]==1 || sw[homoside[k]]==1) {continue;}
 			sw[k]=1;
 			swing_count++;
 			tswpre[k]=t;
@@ -425,9 +425,9 @@ int main(int argc,char** argv)
 			sw[k]=1;
 			swing_count++;
             tswpre[k]=t;
-			if(inhib)
+			if(inhib && k<=2)
 			{
-				if(sw[contraside[k]]==1) {sw[contraside[k]]=0; swing_count--;}
+				//if(sw[contraside[k]]==1) {sw[contraside[k]]=0; swing_count--;}
 				if(sw[homoside[k]]==1) {sw[homoside[k]]=0; swing_count--;}
 			}
 		}	//strong lifting conditions
@@ -522,7 +522,7 @@ int main(int argc,char** argv)
 
 			double dutyfactor=(stridetime==0? 0:(100*ttst[k]/stridetime));
 
-			if(t>10 && dutyfactor-dutyfacor_pre>5) return 0;
+			if(t>10 && dutyfactor-dutyfacor_pre>10) return 0;
 
 			if(t>1 && stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<(stridetime-ttst[k])<<'\t'<<dutyfactor<<endl;
 			//if(stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<ttsw[k]<<'\t'<<dutyfactor<<endl;

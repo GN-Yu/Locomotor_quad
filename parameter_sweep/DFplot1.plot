@@ -22,7 +22,7 @@ set cbrange [40:100]
 set out "DFmodel1_tsw_F0.gif"
 set xlabel "Swing Duration"
 set ylabel "Nomalized Force"
-set xrange [0:0.11]
+set xrange [0:0.2]
 set yrange [0:40]
 set xtics 0,0.02,0.2
 set ytics 0,5,40 
@@ -39,7 +39,7 @@ plot "<cat data/*" u 6:($1==1? $3:NaN):10 w p pt 5 lc palette z notitle
 set out "DFmodel1_tsw_v.gif"
 set xlabel "Swing Duration"
 set ylabel "COM Velocity"
-set xrange [0:0.11]
+set xrange [0:0.2]
 set yrange [0:80]
 set xtics 0,0.02,0.2
 set ytics 0,10,80
