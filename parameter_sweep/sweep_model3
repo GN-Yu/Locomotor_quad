@@ -1,9 +1,9 @@
 g++ -O2 quad_loco.cc -o walk.o
 rm data/*
 
-for v in $(seq 0 0.3 40)
+for v in $(seq 1 0.5 50)
 do
-	./walk.o -T 100 -v0 $v -v1 $v -Gu0 -10 -Gu1 -10 -kv0 0 -kv1 10 -tsw0 1000 -tsw1 1000 -kr 0.5 -inhib -presetWALK -out_swp data/durlr$v >/dev/null 2>/dev/null &
+	./walk.o -T 1000 -v0 $v -v1 $v -Gu0 -10 -Gu1 -10 -kv0 0 -kv1 10 -tsw0 1000 -tsw1 1000 -kr 0.5 -inhib -presetWALK -out_swp data/durlr$v >/dev/null 2>/dev/null &
 done
 wait
 echo "left right sweep done"

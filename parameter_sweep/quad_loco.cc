@@ -220,7 +220,7 @@ int main(int argc,char** argv)
 		yfl0=yf+lf*cos(theta), yfr0=yf-lf*cos(theta);
 		yhl0=yh+lh*cos(theta), yhr0=yh-lh*cos(theta);
 	}
-	vv=sqrt(vx*vx+vy*vy);
+	vv=hypot(vx,vy);
 	vexp=vv;
 
 
@@ -362,7 +362,7 @@ int main(int argc,char** argv)
 		theta+=omega*dt;
 		vx+=((Fx[1]+Fx[2]+Fx[3]+Fx[4])/tau-vx/tau+g*Zx/H)*dt;
 		vy+=((Fy[1]+Fy[2]+Fy[3]+Fy[4])/tau-vy/tau+g*Zy/H)*dt;
-		vv=sqrt(vx*vx+vy*vy);
+		vv=hypot(vx,vy);
 
 		double tauvv=1;
 		vexp+=(vv-vexp)*dt/tauvv;
@@ -431,9 +431,11 @@ int main(int argc,char** argv)
 				if(sw[homoside[k]]==1) {sw[homoside[k]]=0; swing_count--;}
 			}
 		}	//strong lifting conditions
+
+		double balance=total_load>0? (Gpre-total_load)/dt:0;
         
-		//if((total_load!=0 && -(total_load-Gpre)/dt>kv) || swing_count==4)
-		if(total_load!=0 && -(total_load-Gpre)/dt>kv)
+		//if(balance>kv)
+		if(balance>kv || swing_count==4)
 		{
 			int kmax=0;
 			for(int k=1;k<=4;k++) if(sw[k]) {tsw[k]=t-tswpre[k];}
