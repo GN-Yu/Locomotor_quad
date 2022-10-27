@@ -32,6 +32,11 @@ int homoside[5]={0,3,4,1,2};
 char colors[5][10]={"black","brown","blue","red","green"};
 char inifiles[4][50]={"","ini","slowini","fastini"};
 
+// #define OUT(k,key) 
+// { 
+// 	double df=fabs(!sw[k]-(t-tpre[k])/(t-tpp[k])); if(t>10 && fabs(df-dfpre)>.05) return 0; out<<t<<'\t'<<par<<'\t'<<(k)<<'\t'<<sw[k]<<'\t'<<(t-tpre[k])<<'\t'<<(key)<<'\t'<<df<<'\t'<<hypot(vx,vy)<<'\t'<<Gv<<endl; tpp[k]=tpre[k]; tpre[k]=t; dfpre=df; 
+// }
+
 
 int main(int argc,char** argv)
 {
@@ -120,6 +125,7 @@ int main(int argc,char** argv)
 		else if(strcmp(argv[i],"-newslowi")==0) {newini=2;}
 		else if(strcmp(argv[i],"-newfasti")==0) {newini=3;}
 		else if(strcmp(argv[i],"-cookini")==0) {strcpy(inifiles[1],argv[++i]); newini=1;}
+		//else if(strcmp(argv[i],"-out_strideinfo")) {strcpy(fdur,"strideinfo"); stridedata_out=1;}
 		else if(strcmp(argv[i],"-swpini")==0) {strcpy(inifiles[1],argv[++i]); ini=1;}
 		else if(strcmp(argv[i],"-presetWALK")==0) {iniWALK=1;}
 		else if(strcmp(argv[i],"-presetPACE")==0) {iniPACE=1;}
@@ -315,12 +321,12 @@ int main(int argc,char** argv)
 
 		if(hc<0) 
 		{
-			//cerr<<"fall"<<endl;
+			cerr<<"fall"<<endl;
 			break;
 		}
 		else if(total_load<0)
 		{
-			//cerr<<"fly"<<endl;
+			cerr<<"fly"<<endl;
 			break;
 		}
 
@@ -414,7 +420,7 @@ int main(int argc,char** argv)
 
 		for(int k=1;k<=4;k++) if(!sw[k]) if(GP[k]>load[k] && load[k]<Gu)
 		{
-			//if(inhib) if(sw[contraside[k]]==1 || sw[homoside[k]]==1) {continue;}
+			if(inhib) if(sw[contraside[k]]==1 || sw[homoside[k]]==1) {continue;}
 			sw[k]=1;
 			swing_count++;
 			tswpre[k]=t;
@@ -425,17 +431,15 @@ int main(int argc,char** argv)
 			sw[k]=1;
 			swing_count++;
             tswpre[k]=t;
-			if(inhib && k<=2)
+			if(inhib)
 			{
-				//if(sw[contraside[k]]==1) {sw[contraside[k]]=0; swing_count--;}
+				if(sw[contraside[k]]==1) {sw[contraside[k]]=0; swing_count--;}
 				if(sw[homoside[k]]==1) {sw[homoside[k]]=0; swing_count--;}
 			}
 		}	//strong lifting conditions
-
-		double balance=total_load>0? (Gpre-total_load)/dt:0;
         
-		//if(balance>kv)
-		if(balance>kv || swing_count==4)
+		//if((total_load!=0 && -(total_load-Gpre)/dt>kv) || swing_count==4)
+		if(total_load!=0 && -(total_load-Gpre)/dt>kv)
 		{
 			int kmax=0;
 			for(int k=1;k<=4;k++) if(sw[k]) {tsw[k]=t-tswpre[k];}
@@ -512,10 +516,11 @@ int main(int argc,char** argv)
 		static double vvpre=0;
 		for(int k=1;k<=4;k++) if(swpre[k] && !sw[k])	//stop swing tracker
 		{
-			ttsw[k]=t-ttswpre[k];
 			ttstpre[k]=t; 
-			if(k==1) { stridetime=t-stridepre; stridepre=t; }			
-			//if(stridedata_out==1 && stridepre!=0) out_timers<<t<<'\t'<<vv<<'\t'<<k<<'\t'<<ttsw[k]<<'\t'<<-1<<'\t'<<1/stridetime<<endl;
+			ttsw[k]=t-ttswpre[k];
+			if(k==1) { stridetime=t-stridepre; stridepre=t; }
+			//if(stridepre!=0) out_timers<<t<<'\t'<<vv<<'\t'<<k<<'\t'<<ttsw[k]<<'\t'<<-1<<'\t'<<1/stridetime<<endl;
+			//if(stridepre!=0) out_timers<<k<<'\t'<<-1<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<dutyfactor<<endl;
 		}
 		for(int k=1;k<=4;k++) if(!swpre[k] && sw[k])	//start swing tracker
 		{
@@ -524,18 +529,15 @@ int main(int argc,char** argv)
 
 			double dutyfactor=(stridetime==0? 0:(100*ttst[k]/stridetime));
 
-			if(t>10 && dutyfactor-dutyfacor_pre>10) return 0;
+			if(t>10 && dutyfactor-dutyfacor_pre>5) return 0;
 
-			if(t>1 && stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<(stridetime-ttst[k])<<'\t'<<dutyfactor<<endl;
-			//if(stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<ttsw[k]<<'\t'<<dutyfactor<<endl;
+			if(stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<ttsw[k]<<'\t'<<dutyfactor<<endl;
 			// Limb (k) is starts swing at time (t) with parameters (F0), (kv), (Gu) and (Tsw);
 			// it has velocity (vv), stance time (ttst[k]), previous swing time (ttsw[k]) and duty factor (dutyfactor).
-			
-			//if(stridepre!=0) out_timers<<kv<<'\t'<<F0<<'\t'<<vv<<'\t'<<k<<'\t'<<-1<<'\t'<<ttst[k]<<'\t'<<dutyfactor<<endl;
+
 			//if(stridepre!=0 && abs(dutyfactor-dutyfacor_pre)<0.15 && abs(vv-vvpre)<0.5) out_timers<<Tswc<<'\t'<<F0<<'\t'<<vv<<'\t'<<k<<'\t'<<-1<<'\t'<<ttst[k]<<'\t'<<dutyfactor<<endl;
 			dutyfacor_pre=dutyfactor;
 			vvpre=vv;
-			//if(stridedata_out==1 && stridepre!=0) out_timers<<t<<'\t'<<vv<<'\t'<<k<<'\t'<<-1<<'\t'<<ttst[k]<<'\t'<<1/stridetime<<endl; && abs(Tswc-ttsw[k])<0.04
 		}
 		for(int k=1;k<=4;k++) swpre[k]=sw[k];
 	}
