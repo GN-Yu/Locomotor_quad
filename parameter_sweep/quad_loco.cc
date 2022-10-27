@@ -51,6 +51,8 @@ int main(int argc,char** argv)
 	int iniRANDOM=0;
 	char fdur[50]="dur";
 	char ini_name[50]="ini";
+	int nicepic=0;
+	double start_out_time=1;
 
 	double Guini,Gufin; 
 	double Gvini,Gvfin;	
@@ -126,6 +128,7 @@ int main(int argc,char** argv)
 		else if(strcmp(argv[i],"-presetTROT")==0) {iniTROT=1;}
 		//else if(strcmp(argv[i],"-presetRANDOM")==0) {iniRANDOM=1;}
 		else if(strcmp(argv[i],"-out_swp")==0) {strcpy(fdur,argv[++i]); stridedata_out=1;}
+		else if(strcmp(argv[i],"-nicepic")==0) {nicepic=1;}
 		else return 1;
 	}
 
@@ -154,6 +157,7 @@ int main(int argc,char** argv)
 	Gu=Guini;
 	Gv=Gvini;
 	kv=kvini;
+	Tswc=Tswcini;
 
 	if(ini==0)
 	{
@@ -223,6 +227,7 @@ int main(int argc,char** argv)
 	vv=hypot(vx,vy);
 	vexp=vv;
 
+	if(nicepic) {start_out_time=5;}
 
 	//step cycles
 	for(double t=0;t<=T;t+=dt)
@@ -233,6 +238,24 @@ int main(int argc,char** argv)
 		for(int i=1;i<=4;i++) load[i]=0;
 
 		for(int i=1;i<=4;i++) if(sw[i]) swing_count++;	//swing legs count
+
+		if(nicepic && t>=start_out_time)
+		{
+			F0=Fini+(Ffin-Fini)*(t-start_out_time)/(T-start_out_time);
+			Gu=Guini+(Gufin-Guini)*(t-start_out_time)/(T-start_out_time);
+			Gv=Gvini+(Gvfin-Gvini)*(t-start_out_time)/(T-start_out_time);
+			kv=kvini+(kvfin-kvini)*(t-start_out_time)/(T-start_out_time);
+			Tswc=Tswcini+(Tswcfin-Tswcini)*(t-start_out_time)/(T-start_out_time);
+		}
+		else if(!nicepic)
+		{
+			F0=Fini+(Ffin-Fini)*t/T;
+			Gu=Guini+(Gufin-Guini)*t/T;
+			Gv=Gvini+(Gvfin-Gvini)*t/T;
+			kv=kvini+(kvfin-kvini)*t/T;
+			Tswc=Tswcini+(Tswcfin-Tswcini)*t/T;
+		}
+		
 
         double u1=xfh[1]-xc,u2=xfh[2]-xc,u3=xfh[3]-xc,u4=xfh[4]-xc;
         double v1=yfh[1]-yc,v2=yfh[2]-yc,v3=yfh[3]-yc,v4=yfh[4]-yc;
@@ -347,7 +370,6 @@ int main(int argc,char** argv)
 		}
 
 		//horizontal force calculations
-		F0=Fini+(Ffin-Fini)*t/T;	//F0 update
 		double Fx[5]={},Fy[5]={};
 		double delta=0*omega;
 		double FL=(1+delta)*F0, FR=(1-delta)*F0;
@@ -390,11 +412,6 @@ int main(int argc,char** argv)
 		
 		omega+=(M/I-omega+MA)*dt/tau;
 		// omega+=(M/I-omega)*dt/tau;
-
-		Gu=Guini+(Gufin-Guini)*t/T;
-		Gv=Gvini+(Gvfin-Gvini)*t/T;
-		kv=kvini+(kvfin-kvini)*t/T;
-        Tswc=Tswcini+(Tswcfin-Tswcini)*t/T;
 
 		
 		for(int k=1;k<=4;k++) tsw[k]=0;
@@ -526,7 +543,7 @@ int main(int argc,char** argv)
 
 			if(t>10 && dutyfactor-dutyfacor_pre>10) return 0;
 
-			if(t>1 && stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<(stridetime-ttst[k])<<'\t'<<dutyfactor<<endl;
+			if(t>=1 && stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<(stridetime-ttst[k])<<'\t'<<dutyfactor<<endl;
 			//if(stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<ttsw[k]<<'\t'<<dutyfactor<<endl;
 			// Limb (k) is starts swing at time (t) with parameters (F0), (kv), (Gu) and (Tsw);
 			// it has velocity (vv), stance time (ttst[k]), previous swing time (ttsw[k]) and duty factor (dutyfactor).

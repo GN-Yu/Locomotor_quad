@@ -28,9 +28,9 @@ set xtics 0,0.02,0.2
 set ytics 0,5,40 
 set title "Duty Factor (for FL)"
 
-#plot "<cat data/*" u 6:3:10 w p pt 5 lc palette z notitle
+plot "<cat data/*" u 6:3:(($10<100 && $10>45)? $10:NaN) w p pt 5 lc palette z notitle
 
-plot "<cat data/*" u 6:($1==1? $3:NaN):10 w p pt 5 lc palette z notitle
+#plot "<cat data/*" u 6:($1==1? $3:NaN):10 w p pt 5 lc palette z notitle
 
 #plot "<cat data/*" u 9:($1==1? $3:NaN):10 w p pt 5 lc palette z notitle
 
@@ -45,8 +45,8 @@ set xtics 0,0.02,0.2
 set ytics 0,10,80
 set title "Duty Factor (for FL)"
 
-#plot "<cat data/*" u 6:7:10 w p pt 5 lc palette z notitle
+plot "<cat data/*" u 6:7:(($10<100 && $10>45)? $10:NaN) w p pt 5 lc palette z notitle, $realdata u 1:2:(79.51-3.489*sqrt($2)) w l lw 5 lc palette z notitle
 
-plot "<cat data/*" u 6:($1==1? $7:NaN):10 w p pt 5 lc palette z notitle, $realdata u 1:2:(79.51-3.489*sqrt($2)) w l lw 5 lc palette z notitle
+#plot "<cat data/*" u 6:($1==1? $7:NaN):10 w p pt 5 lc palette z notitle, $realdata u 1:2:(79.51-3.489*sqrt($2)) w l lw 5 lc palette z notitle
 
 #plot "<cat data/*" u 9:($1==1? $7:NaN):10 w p pt 5 lc palette z notitle, $realdata u 1:2:(79.51-3.489*sqrt($2)) w l lw 5 lc palette z notitle
