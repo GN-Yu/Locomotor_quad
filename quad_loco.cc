@@ -26,8 +26,8 @@ double tau=.25;
 double DM[5]={0,1*L,1*L,1*L,1*L};	//max leg length
 static int sw[5]={0,1,0,0,0};
 
-int contraside[5]={0,2,1,4,3};
-int homoside[5]={0,3,4,1,2};
+int contralateral[5]={0,2,1,4,3};
+int ipsilateral[5]={0,3,4,1,2};
 
 char colors[5][10]={"black","brown","blue","red","green"};
 char inifiles[4][50]={"","ini","slowini","fastini"};
@@ -432,7 +432,7 @@ int main(int argc,char** argv)
 
 		for(int k=1;k<=4;k++) if(!sw[k]) if(GP[k]>load[k] && load[k]<Gu)
 		{
-			//if(inhib) if(sw[contraside[k]]==1 || sw[homoside[k]]==1) {continue;}
+			//if(inhib) if(sw[contralateral[k]]==1 || sw[ipsilateral[k]]==1) {continue;}
 			sw[k]=1;
 			swing_count++;
 			tswpre[k]=t;
@@ -445,8 +445,8 @@ int main(int argc,char** argv)
             tswpre[k]=t;
 			if(inhib && k<=2)
 			{
-				//if(sw[contraside[k]]==1) {sw[contraside[k]]=0; swing_count--;}
-				if(sw[homoside[k]]==1) {sw[homoside[k]]=0; swing_count--;}
+				//if(sw[contralateral[k]]==1) {sw[contralateral[k]]=0; swing_count--;}
+				if(sw[ipsilateral[k]]==1) {sw[ipsilateral[k]]=0; swing_count--;}
 			}
 		}	//strong lifting conditions
 
