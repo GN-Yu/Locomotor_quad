@@ -21,12 +21,12 @@ set cbrange [40:100]
 ## model 1 plot 1
 set out "DFmodel1_tsw_F0.gif"
 set xlabel "Swing Duration"
-set ylabel "Nomalized Force"
+set ylabel "Limb Horizontal Force"
 set xrange [0:0.2]
 set yrange [0:40]
 set xtics 0,0.02,0.2
 set ytics 0,5,40 
-set title "Duty Factor (for FL)"
+set title "Duty Factor Heat Map"
 
 plot "<cat data/*" u 6:3:(($10<100 && $10>45)? $10:NaN) w p pt 5 lc palette z notitle
 
@@ -43,9 +43,9 @@ set xrange [0:0.2]
 set yrange [0:80]
 set xtics 0,0.02,0.2
 set ytics 0,10,80
-set title "Duty Factor (for FL)"
+set title "Duty Factor Heat Map"
 
-plot "<cat data/*" u 6:7:(($10<100 && $10>45)? $10:NaN) w p pt 5 lc palette z notitle, $realdata u 1:2:(79.51-3.489*sqrt($2)) w l lw 5 lc palette z notitle
+plot "<cat data/*" u 6:7:(($10<100 && $10>45)? $10:NaN) w p pt 5 lc palette z notitle, $realdata u 1:2:(79.51-3.489*sqrt($2)) w l lw 5 lc -1 title "Experimental data"
 
 #plot "<cat data/*" u 6:($1==1? $7:NaN):10 w p pt 5 lc palette z notitle, $realdata u 1:2:(79.51-3.489*sqrt($2)) w l lw 5 lc palette z notitle
 
