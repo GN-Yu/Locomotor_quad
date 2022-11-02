@@ -1,6 +1,6 @@
 # Axes label
 set xlabel 'time'
-set ylabel 'limb number'
+set ylabel 'limb'
 set key noautotitle
 set size ratio 0
 # Axes ranges
