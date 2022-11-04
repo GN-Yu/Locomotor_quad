@@ -3,6 +3,11 @@
         "cmath": "cpp",
         "ostream": "cpp",
         "*.tcc": "cpp",
-        "iosfwd": "cpp"
-    }
+        "iosfwd": "cpp",
+        "array": "cpp",
+        "string_view": "cpp",
+        "initializer_list": "cpp",
+        "utility": "cpp"
+    },
+    "C_Cpp.errorSquiggles": "Enabled"
 }

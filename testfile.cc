@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <vector>
 
 using namespace std;
 
@@ -46,23 +47,26 @@ double xcom(double x0,double y0,double vx,double vy,double theta,double delta)  
 
 int main()
 {
-	int Fl[5]={0,1,1,1,0};
-	int count=0;
-	for(int i=1;i<=4;i++) {count+=Fl[i];}
+	// int Fl[5]={0,1,1,1,0};
+	// int count=0;
+	// for(int i=1;i<=4;i++) {count+=Fl[i];}
 
-	cout<<count<<xcom(0,0,0,0,0,0)<<endl;
+	// cout<<count<<xcom(0,0,0,0,0,0)<<endl;
 
-	double x[5]={0,2,4,6,8}, y[5]={0,1,3,5,7};
-	for(int i=1;i<=4;i++){cout<<"set object "<< i <<" circle front at "<<x[i]<<','<<y[i]<<" size "<<.2<<" fc \"brown\""<<endl;}
+	// double x[5]={0,2,4,6,8}, y[5]={0,1,3,5,7};
+	// for(int i=1;i<=4;i++){cout<<"set object "<< i <<" circle front at "<<x[i]<<','<<y[i]<<" size "<<.2<<" fc \"brown\""<<endl;}
 
-	int time = 9;
-	if (time < 10) {
-	cout << "Good morning.";
-	} else if (time < 20) {
-	cout << "Good day.";
-	} else {
-	cout << "Good evening.";
-	}
+	// int time = 9;
+	// if (time < 10) {
+	// cout << "Good morning.";
+	// } else if (time < 20) {
+	// cout << "Good day.";
+	// } else {
+	// cout << "Good evening.";
+	// }
+	
+	vector<int> sums;
+	cout<<sums.size()<<endl;
 	
 	return 0;
 }
