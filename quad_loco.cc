@@ -27,7 +27,7 @@ double DM[5]={0,1*L,1*L,1*L,1*L};	//max leg length
 static int sw[5]={0,1,0,0,0};
 
 int contralateral[5]={0,2,1,4,3};
-int ipsilateral[5]={0,3,4,1,2};
+int homolateral[5]={0,3,4,1,2};
 
 char colors[5][10]={"black","brown","blue","red","green"};
 char inifiles[4][50]={"","ini","slowini","fastini"};
@@ -139,17 +139,20 @@ int main(int argc,char** argv)
 
 	if(ani_out)
 	{
-		cerr<<"set xtics 0,5,1000"<<endl;
-		cerr<<"set ytics 0,5,2000"<<endl;
+		cerr<<"set terminal qt size 1000,1000"<<endl;
+		cerr<<"set xlabel ''"<<endl;
+		cerr<<"set ylabel ''"<<endl;
+		cerr<<"set zlabel ''"<<endl;
+		cerr<<"set key noautotitle"<<endl;
+		cerr<<"set xtics -50,5,1000"<<endl;
+		cerr<<"set ytics -50,5,2000"<<endl;
         cerr<<"set ztics 0,1,5"<<endl;
 		cerr<<"set size ratio -1"<<endl;
 		cerr<<"set grid"<<endl;
-		cerr<<"set xlabel 'x'"<<endl;
-		cerr<<"set ylabel 'y'"<<endl;
-        cerr<<"set zlabel 'z'"<<endl;
         cerr<<"set xyplane 0"<<endl;
         cerr<<"set zrange [0:4]"<<endl;
-        cerr<<"set view equal xyz"<<endl;
+		cerr<<"set view 0,0,1,1"<<endl;
+        //cerr<<"set view equal xyz"<<endl;
 	}
 
 
@@ -432,7 +435,7 @@ int main(int argc,char** argv)
 
 		for(int k=1;k<=4;k++) if(!sw[k]) if(GP[k]>load[k] && load[k]<Gu)
 		{
-			//if(inhib) if(sw[contralateral[k]]==1 || sw[ipsilateral[k]]==1) {continue;}
+			//if(inhib) if(sw[contralateral[k]]==1 || sw[homolateral[k]]==1) {continue;}
 			sw[k]=1;
 			swing_count++;
 			tswpre[k]=t;
@@ -446,7 +449,7 @@ int main(int argc,char** argv)
 			if(inhib && k<=2)
 			{
 				//if(sw[contralateral[k]]==1) {sw[contralateral[k]]=0; swing_count--;}
-				if(sw[ipsilateral[k]]==1) {sw[ipsilateral[k]]=0; swing_count--;}
+				if(sw[homolateral[k]]==1) {sw[homolateral[k]]=0; swing_count--;}
 			}
 		}	//strong lifting conditions
 

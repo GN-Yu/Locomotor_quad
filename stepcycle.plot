@@ -6,7 +6,7 @@ set size ratio 0
 # Axes ranges
 set size ratio 0
 set xrange [0:20]
-set yrange [0:5]
+set yrange [.9:4.1]
 set xtics 0,0.1,20
 set ytics ("FL" 1, "HR" 2, "FR" 3, "HL" 4)
 set grid

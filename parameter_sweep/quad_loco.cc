@@ -26,8 +26,8 @@ double tau=.25;
 double DM[5]={0,1*L,1*L,1*L,1*L};	//max leg length
 static int sw[5]={0,1,0,0,0};
 
-int contraside[5]={0,2,1,4,3};
-int homoside[5]={0,3,4,1,2};
+int contralateral[5]={0,2,1,4,3};
+int homolateral[5]={0,3,4,1,2};
 
 char colors[5][10]={"black","brown","blue","red","green"};
 char inifiles[4][50]={"","ini","slowini","fastini"};
@@ -134,6 +134,7 @@ int main(int argc,char** argv)
 
 	//output settings
 	ofstream out_timers(fdur);
+	ofstream out_ini(inifiles[newini]);
 	// ofstream out_timers("strideinfo");
 
 	if(ani_out)
@@ -210,7 +211,7 @@ int main(int argc,char** argv)
 	}
 	else
 	{
-		ifstream(inifiles[ini])>>xc>>yc>>vx>>vy>>theta>>omega>>Gpre
+		ifstream(inifiles[ini])>>xc>>yc>>vx>>vy>>hc>>theta>>omega>>Gpre
 		>>xfl>>xfr>>xhl>>xhr>>yfl>>yfr>>yhl>>yhr
 		>>sw[1]>>sw[2]>>sw[3]>>sw[4]
 		>>tswpre[1]>>tswpre[2]>>tswpre[3]>>tswpre[4];
@@ -431,7 +432,7 @@ int main(int argc,char** argv)
 
 		for(int k=1;k<=4;k++) if(!sw[k]) if(GP[k]>load[k] && load[k]<Gu)
 		{
-			//if(inhib) if(sw[contraside[k]]==1 || sw[homoside[k]]==1) {continue;}
+			//if(inhib) if(sw[contralateral[k]]==1 || sw[homolateral[k]]==1) {continue;}
 			sw[k]=1;
 			swing_count++;
 			tswpre[k]=t;
@@ -444,8 +445,8 @@ int main(int argc,char** argv)
             tswpre[k]=t;
 			if(inhib && k<=2)
 			{
-				//if(sw[contraside[k]]==1) {sw[contraside[k]]=0; swing_count--;}
-				if(sw[homoside[k]]==1) {sw[homoside[k]]=0; swing_count--;}
+				//if(sw[contralateral[k]]==1) {sw[contralateral[k]]=0; swing_count--;}
+				if(sw[homolateral[k]]==1) {sw[homolateral[k]]=0; swing_count--;}
 			}
 		}	//strong lifting conditions
 
@@ -560,7 +561,7 @@ int main(int argc,char** argv)
 	if(newini)
 	{
 		for(int k=1;k<=4;k++) tswpre[k]-=T;
-		ofstream(inifiles[newini])<<xc<<'\t'<<yc<<'\t'<<vx<<'\t'<<vy<<'\t'<<theta<<'\t'<<omega<<'\t'<<Gpre<<'\t'
+		out_ini<<xc<<'\t'<<yc<<'\t'<<vx<<'\t'<<vy<<'\t'<<hc<<'\t'<<theta<<'\t'<<omega<<'\t'<<Gpre<<'\t'
 		<<xfl<<'\t'<<xfr<<'\t'<<xhl<<'\t'<<xhr<<'\t'
 		<<yfl<<'\t'<<yfr<<'\t'<<yhl<<'\t'<<yhr<<'\t'
 		<<sw[1]<<'\t'<<sw[2]<<'\t'<<sw[3]<<'\t'<<sw[4]<<'\t'
