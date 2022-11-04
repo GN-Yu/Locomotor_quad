@@ -273,28 +273,28 @@ quad_loco
 
 
 Model 1: velocity at 40
-!g++ -O2 quad_loco.cc -o quad_loco.o && ./quad_loco.o -T 20 -fps 800 -v0 11.4 -v1 11.4 -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .02 -tsw1 .02 -kr 0.5 -presetTROT >dat 2>ppp
+!g++ -O2 quad_loco.cc -o quad_loco.o && ./quad_loco.o -T 20 -fps 500 -v0 11.4 -v1 11.4 -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .02 -tsw1 .02 -kr 0.5 -presetTROT >dat 2>ppp
 ----end part
 
-!g++ -O2 quad_loco.cc -o quad_loco.o && ./quad_loco.o -T 20 -fps 800 -v0 13 -v1 13 -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .01 -tsw1 .05 -kr 0.5 -presetTROT >dat 2>ppp
+!g++ -O2 quad_loco.cc -o quad_loco.o && ./quad_loco.o -T 20 -fps 500 -v0 13 -v1 13 -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .01 -tsw1 .05 -kr 0.5 -presetTROT >dat 2>ppp
 ----near end part
 
 
 
 Model 2: velocity at 40
-!g++ -O2 quad_loco.cc -o quad_loco.o && ./quad_loco.o -T 20 -fps 800 -v0 14 -v1 14 -Gu0 -10 -Gu1 -10 -kv0 0 -kv1 5 -tsw0 1000 -tsw1 1000 -kr 0.2 -presetWALK >dat 2>ppp
+!g++ -O2 quad_loco.cc -o quad_loco.o && ./quad_loco.o -T 20 -fps 500 -v0 14 -v1 14 -Gu0 -10 -Gu1 -10 -kv0 0 -kv1 5 -tsw0 1000 -tsw1 1000 -kr 0.2 -presetWALK >dat 2>ppp
 ----front middle part
 
-!g++ -O2 quad_loco.cc -o quad_loco.o && ./quad_loco.o -T 20 -fps 800 -v0 18 -v1 18 -Gu0 -10 -Gu1 -10 -kv0 0 -kv1 5 -tsw0 1000 -tsw1 1000 -kr 0.2 -presetWALK >dat 2>ppp
+!g++ -O2 quad_loco.cc -o quad_loco.o && ./quad_loco.o -T 20 -fps 500 -v0 18 -v1 18 -Gu0 -10 -Gu1 -10 -kv0 0 -kv1 5 -tsw0 1000 -tsw1 1000 -kr 0.2 -presetWALK >dat 2>ppp
 ----near end part
 
 
 
 Model 3: velocity at 40
-!g++ -O2 quad_loco.cc -o quad_loco.o && ./quad_loco.o -T 20 -fps 800 -v0 14 -v1 14 -Gu0 -10 -Gu1 -10 -kv0 0 -kv1 10 -tsw0 1000 -tsw1 1000 -kr 0.3 -inhib -presetWALK >dat 2>ppp
+!g++ -O2 quad_loco.cc -o quad_loco.o && ./quad_loco.o -T 20 -fps 500 -v0 14 -v1 14 -Gu0 -10 -Gu1 -10 -kv0 0 -kv1 10 -tsw0 1000 -tsw1 1000 -kr 0.3 -inhib -presetWALK >dat 2>ppp
 ----about 1.0-1.5 s
 
-!g++ -O2 quad_loco.cc -o quad_loco.o && ./quad_loco.o -T 20 -fps 800 -v0 16 -v1 16 -Gu0 -10 -Gu1 -10 -kv0 0 -kv1 10 -tsw0 1000 -tsw1 1000 -kr 0.3 -inhib -presetWALK >dat 2>ppp
+!g++ -O2 quad_loco.cc -o quad_loco.o && ./quad_loco.o -T 20 -fps 500 -v0 16 -v1 16 -Gu0 -10 -Gu1 -10 -kv0 0 -kv1 10 -tsw0 1000 -tsw1 1000 -kr 0.3 -inhib -presetWALK >dat 2>ppp
 ----about 5.0-5.3 s
 
 
