@@ -5,33 +5,38 @@
 
 using namespace std;
 
-//units: length - cm, time - s, mass - g
+// plot flags
+bool plot_parameter_sweep = false;
+bool plot_specified_velocity = false;
 
-double g=1000;	//garivtational accleration
-double H=3;		//hight
-double lf=1;	//half shoulder length
-double lh=1;	//half hip length
-double h=1;	//half width
-double l=5;	//half body length
-double L1=1*l, L2=0*l;		//front, hind part body length
-double L=L1+L2;				//total body length
-double D=sqrt(L*L+(lh+lf)*(lh+lf)); 	//diagonal length
-double freq=sqrt(g/H);			//inverted pendulum frequency
-double Tswc;				//typical swing time
+// quadruped body geometry
+// units: length - cm, time - s, mass - g
+double g=1000;                       //garivtational accleration
+double H=3;                          //hight
+double lf=1;                         //half shoulder length
+double lh=1;                         //half hip length
+double h=1;                          //half width
+double l=5;                          //half body length
+double L1=1*l, L2=0*l;               //front, hind part body length
+double L=L1+L2;                      //total body length
+double D=sqrt(L*L+(lh+lf)*(lh+lf));  //diagonal length
+double freq=sqrt(g/H);               //inverted pendulum frequency
+double Tswc;                         //typical swing time
 
-// double m=30; // mouse mass in g
-double I=L*L/3; // moment of inertia over mass
-double tau=.25;
+// double m   = 30;     // mouse mass in g
+double I   = L*L/3;  // moment of inertia over mass
+double tau = .25;
 
-double DM[5]={0,1*L,1*L,1*L,1*L};	//max leg length
-static int sw[5]={0,1,0,0,0};
+double DM[5]     = {0,1*L,1*L,1*L,1*L};  //max leg length
+static int sw[5] = {0,1,0,0,0};
 
-int contralateral[5]={0,2,1,4,3};
-int homolateral[5]={0,3,4,1,2};
+int contralateral[5] = {0,2,1,4,3};
+int homolateral[5]   = {0,3,4,1,2};
 
-char colors[5][10]={"black","brown","blue","red","green"};
-char inifiles[4][50]={"","ini","slowini","fastini"};
+char colors[5][10]   = {"black","brown","blue","red","green"};
+char inifiles[4][50] = {"","ini","slowini","fastini"};
 
+double rnd() { return ((double) rand() / (RAND_MAX)) * 2 - 1; }
 
 int main(int argc,char** argv)
 {
@@ -53,6 +58,7 @@ int main(int argc,char** argv)
 	char ini_name[50]="ini";
 	int nicepic=0;
 	double start_out_time=1;
+	srand (time(NULL));
 
 	double Guini,Gufin; 
 	double Gvini,Gvfin;	
@@ -126,7 +132,7 @@ int main(int argc,char** argv)
 		else if(strcmp(argv[i],"-presetWALK")==0) {iniWALK=1;}
 		else if(strcmp(argv[i],"-presetPACE")==0) {iniPACE=1;}
 		else if(strcmp(argv[i],"-presetTROT")==0) {iniTROT=1;}
-		//else if(strcmp(argv[i],"-presetRANDOM")==0) {iniRANDOM=1;}
+		else if(strcmp(argv[i],"-presetRANDOM")==0) {iniRANDOM=1;}
 		else if(strcmp(argv[i],"-out_swp")==0) {strcpy(fdur,argv[++i]); stridedata_out=1;}
 		else if(strcmp(argv[i],"-nicepic")==0) {nicepic=1;}
 		else return 1;
@@ -139,7 +145,7 @@ int main(int argc,char** argv)
 
 	if(ani_out)
 	{
-		cerr<<"set terminal qt size 1000,1000"<<endl;
+		cerr<<"set terminal qt size 800,800"<<endl;
 		cerr<<"set xlabel ''"<<endl;
 		cerr<<"set ylabel ''"<<endl;
 		cerr<<"set zlabel ''"<<endl;
@@ -178,6 +184,7 @@ int main(int argc,char** argv)
 		yhl0=yh+lh*cos(theta), yhr0=yh-lh*cos(theta);
 
 		double qq=L/sqrt(2)/2;
+		double r=0.3*qq;
 
 		if(iniWALK==1)
 		{
@@ -203,9 +210,16 @@ int main(int argc,char** argv)
 			xhl=xhl0, yhl=yhl0;
 			xhr=xhr0-qq, yhr=yhr0-qq;
 		}
+		else if(iniRANDOM=1)
+		{
+			sw[1]=1; sw[2]=0; sw[3]=0; sw[4]=1; 
+			xfl=xfl0; yfl=yfl0;
+			xfr=xfr0-qq+r*rnd(); yfr=yfr0-qq+r*rnd();
+			xhl=xhl0-qq+r*rnd(); yhl=yhl0-qq+r*rnd();
+			xhr=xhr0; yhr=yhr0;
+		}
 		else
 		{
-			iniRANDOM=1;
 			xfl=xfl0-3*cos(theta); yfl=yfl0-3*sin(theta);
 			xfr=xfr0; yfr=yfr0;
 			xhl=xhl0; yhl=yhl0;
@@ -476,7 +490,7 @@ int main(int argc,char** argv)
 		Gpre=total_load;
 
 	
-		//output data
+		// output data
 		if(ani_out && int(t/dt)%int(DT/dt)==0)
 		{
 			cout<<t<<'\t'<<xc<<'\t'<<yc<<'\t'<<vx<<'\t'<<vy<<'\t'<<total_load;
@@ -485,11 +499,12 @@ int main(int argc,char** argv)
 			// cout<<'\t'<<deltal<<'\t'<<deltar;
 			cout<<endl;
 			
+			// animation using gnuplot
 			cerr<<"unset object"<<endl;
 			cerr<<"unset arrow"<<endl;
 			cerr<<"set xrange ["<<xc-20<<':'<<xc+20<<"]"<<endl;
 			cerr<<"set yrange ["<<yc-20<<':'<<yc+20<<"]"<<endl;
-			cerr<<"set title \"V="<<int(vv)<<'\"'<<endl;
+			//cerr<<"set title \"V="<<int(vv)<<'\"'<<endl;
 			for(int i=1;i<=4;i++) {cerr<<"set object "<<i<<" circle front at "<<xfh[i]<<','<<yfh[i]<<",0 size "<<.2
 									<<" fc \""<<colors[i]<<"\" fs "<<(sw[i] ? "empty" : "solid")<<endl;}
 
@@ -508,8 +523,8 @@ int main(int argc,char** argv)
 			cerr<<"set arrow 11 from "<<xh<<','<<yh<<','<<hc<<" to "<<xf<<','<<yf<<','<<hc<<" lt -1 lw 5 nohead"<<endl;
 			cerr<<"set arrow 12 from "<<xfl0<<','<<yfl0<<','<<hc<<" to "<<xfr0<<','<<yfr0<<','<<hc<<" nohead dt 3"<<endl;
 			cerr<<"set arrow 13 from "<<xhl0<<','<<yhl0<<','<<hc<<" to "<<xhr0<<','<<yhr0<<','<<hc<<" nohead dt 3"<<endl;
-			cerr<<"set arrow 14 from "<<xhl0<<','<<yhl0<<','<<hc<<" to "<<xfl0<<','<<yfl0<<','<<hc<<" dt 3"<<endl;
-			cerr<<"set arrow 15 from "<<xhr0<<','<<yhr0<<','<<hc<<" to "<<xfr0<<','<<yfr0<<','<<hc<<" dt 3"<<endl;
+			//cerr<<"set arrow 14 from "<<xhl0<<','<<yhl0<<','<<hc<<" to "<<xfl0<<','<<yfl0<<','<<hc<<" dt 3"<<endl;
+			//cerr<<"set arrow 15 from "<<xhr0<<','<<yhr0<<','<<hc<<" to "<<xfr0<<','<<yfr0<<','<<hc<<" dt 3"<<endl;
 			cerr<<"splot \"dat\" u 2:3:(0) w d"<<endl;
 		}
 

@@ -7,20 +7,17 @@
 
 using namespace std;
 
-double g=1000; // garivtational accleration in cm/s/s
-double H=1.5; // mouse hight in cm
-double L=5; // mouse half-length in cm
-double h=1.5; // mouse half-width in cm
-double D=sqrt(L*L+4*h*h); // diagonal length
-double freq=sqrt(g/H); // frequency
-
-// double m=25; // mouse mass in g
-double I=L*L/3; // moment of inertia over mass
-
-double F0=10;	// locomotor speed
-double tau=0.2;	// lambda = 1/tau
-
-double L1=1*L, L2=.2*L; //hind legs are close to the COM
+double g    = 1000;             // garivtational accleration in cm/s/s
+double H    = 1.5;              // mouse hight in cm
+double L    = 5;                // mouse half-length in cm
+double h    = 1.5;              // mouse half-width in cm
+double D    = sqrt(L*L+4*h*h);  // diagonal length
+double freq = sqrt(g/H);        // frequency
+double m    = 25;               // mouse mass in g
+double I    = L*L/3;            // moment of inertia over mass
+double F0   = 10;               // locomotor speed
+double tau  = 0.2;              // lambda = 1/tau
+double L1   = 1*L, L2 = .2*L;   //hind legs are close to the COM
 
 double xcom(double x0,double y0,double vx,double vy,double theta,double delta)  //distance of extrapolated center of mass from the diagonal, delta is the body bending angle
 {
@@ -45,6 +42,9 @@ double xcom(double x0,double y0,double vx,double vy,double theta,double delta)  
 	return (xc-x1)*a+(yc-y1)*b+vz/freq;
 }
 
+double rnd1() {return ((double) rand() / (RAND_MAX)) * 2 - 1;}
+double rnd2() {srand (time(NULL)); return double(rand())/RAND_MAX;}
+
 int main()
 {
 	// int Fl[5]={0,1,1,1,0};
@@ -64,9 +64,13 @@ int main()
 	// } else {
 	// cout << "Good evening.";
 	// }
+	srand (time(NULL)); 
+	int i=0;
+	while(i<=5){
+		cout<<rnd1()<<'\t'<<rnd1()<<endl;
+		i++;
+	}
 	
-	vector<int> sums;
-	cout<<sums.size()<<endl;
 	
 	return 0;
 }

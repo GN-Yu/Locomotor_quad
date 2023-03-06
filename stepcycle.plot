@@ -1,4 +1,5 @@
 # Axes label
+set terminal qt size 1000,200
 set xlabel 'time'
 set ylabel 'limb'
 set key noautotitle

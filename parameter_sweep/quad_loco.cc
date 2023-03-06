@@ -32,6 +32,7 @@ int homolateral[5]={0,3,4,1,2};
 char colors[5][10]={"black","brown","blue","red","green"};
 char inifiles[4][50]={"","ini","slowini","fastini"};
 
+double rnd() { return ((double) rand() / (RAND_MAX)) * 2 - 1; }
 
 int main(int argc,char** argv)
 {
@@ -53,6 +54,7 @@ int main(int argc,char** argv)
 	char ini_name[50]="ini";
 	int nicepic=0;
 	double start_out_time=1;
+	srand (time(NULL));
 
 	double Guini,Gufin; 
 	double Gvini,Gvfin;	
@@ -139,14 +141,15 @@ int main(int argc,char** argv)
 
 	if(ani_out)
 	{
-		cerr<<"set xtics 0,5,1000"<<endl;
-		cerr<<"set ytics 0,5,2000"<<endl;
+		cerr<<"set xlabel ''"<<endl;
+		cerr<<"set ylabel ''"<<endl;
+		cerr<<"set zlabel ''"<<endl;
+		cerr<<"set key noautotitle"<<endl;
+		cerr<<"set xtics -50,5,1000"<<endl;
+		cerr<<"set ytics -50,5,2000"<<endl;
         cerr<<"set ztics 0,1,5"<<endl;
 		cerr<<"set size ratio -1"<<endl;
 		cerr<<"set grid"<<endl;
-		cerr<<"set xlabel 'x'"<<endl;
-		cerr<<"set ylabel 'y'"<<endl;
-        cerr<<"set zlabel 'z'"<<endl;
         cerr<<"set xyplane 0"<<endl;
         cerr<<"set zrange [0:4]"<<endl;
         cerr<<"set view equal xyz"<<endl;
@@ -175,6 +178,7 @@ int main(int argc,char** argv)
 		yhl0=yh+lh*cos(theta), yhr0=yh-lh*cos(theta);
 
 		double qq=L/sqrt(2)/2;
+		double r=0.3*qq;
 
 		if(iniWALK==1)
 		{
@@ -200,9 +204,16 @@ int main(int argc,char** argv)
 			xhl=xhl0, yhl=yhl0;
 			xhr=xhr0-qq, yhr=yhr0-qq;
 		}
+		else if(iniRANDOM=1)
+		{
+			sw[1]=1; sw[2]=0; sw[3]=0; sw[4]=1; 
+			xfl=xfl0; yfl=yfl0;
+			xfr=xfr0-qq+r*rnd(); yfr=yfr0-qq+r*rnd();
+			xhl=xhl0-qq+r*rnd(); yhl=yhl0-qq+r*rnd();
+			xhr=xhr0; yhr=yhr0;
+		}
 		else
 		{
-			iniRANDOM=1;
 			xfl=xfl0-3*cos(theta); yfl=yfl0-3*sin(theta);
 			xfr=xfr0; yfr=yfr0;
 			xhl=xhl0; yhl=yhl0;
@@ -256,7 +267,7 @@ int main(int argc,char** argv)
 			kv=kvini+(kvfin-kvini)*t/T;
 			Tswc=Tswcini+(Tswcfin-Tswcini)*t/T;
 		}
-		
+
 
         double u1=xfh[1]-xc,u2=xfh[2]-xc,u3=xfh[3]-xc,u4=xfh[4]-xc;
         double v1=yfh[1]-yc,v2=yfh[2]-yc,v3=yfh[3]-yc,v4=yfh[4]-yc;
@@ -505,8 +516,8 @@ int main(int argc,char** argv)
 			cerr<<"set arrow 11 from "<<xh<<','<<yh<<','<<hc<<" to "<<xf<<','<<yf<<','<<hc<<" lt -1 lw 5 nohead"<<endl;
 			cerr<<"set arrow 12 from "<<xfl0<<','<<yfl0<<','<<hc<<" to "<<xfr0<<','<<yfr0<<','<<hc<<" nohead dt 3"<<endl;
 			cerr<<"set arrow 13 from "<<xhl0<<','<<yhl0<<','<<hc<<" to "<<xhr0<<','<<yhr0<<','<<hc<<" nohead dt 3"<<endl;
-			cerr<<"set arrow 14 from "<<xhl0<<','<<yhl0<<','<<hc<<" to "<<xfl0<<','<<yfl0<<','<<hc<<" dt 3"<<endl;
-			cerr<<"set arrow 15 from "<<xhr0<<','<<yhr0<<','<<hc<<" to "<<xfr0<<','<<yfr0<<','<<hc<<" dt 3"<<endl;
+			//cerr<<"set arrow 14 from "<<xhl0<<','<<yhl0<<','<<hc<<" to "<<xfl0<<','<<yfl0<<','<<hc<<" dt 3"<<endl;
+			//cerr<<"set arrow 15 from "<<xhr0<<','<<yhr0<<','<<hc<<" to "<<xfr0<<','<<yfr0<<','<<hc<<" dt 3"<<endl;
 			cerr<<"splot \"dat\" u 2:3:(0) w d"<<endl;
 		}
 
