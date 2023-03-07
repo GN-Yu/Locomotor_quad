@@ -526,8 +526,15 @@ int main(int argc,char** argv)
 		for(int k=1;k<=4;k++) GP[k]=load[k];
 		Gpre=total_load;
 
-	
-		// output data
+		//falling indicator: if there is at least one leg having negative load for a long time (say 0.2s), it is falling
+		// static double fallpre=0;
+		// int iter_nonneg;
+		// iter_nonneg=1;
+		// while(load[iter_nonneg]>=0 && iter_nonneg<4) iter_nonneg++;
+		// if(iter_nonneg<4) {if(t-fallpre>0.2) break;}
+		// else fallpre=t;
+
+		//output data
 		if(ani_out && int(t/dt)%int(DT/dt)==0)
 		{
 			cout<<t<<'\t'<<xc<<'\t'<<yc<<'\t'<<vx<<'\t'<<vy<<'\t'<<total_load;
@@ -540,15 +547,7 @@ int main(int argc,char** argv)
 			plotcmd_frame(sw,xc,yc,hc,xf,yf,xh,yh,xfh,yfh,xfh0,yfh0);
 		}
 
-		//falling indicator: if there is at least one leg having negative load for a long time (say 0.2s), it is falling
-		// static double fallpre=0;
-		// int iter_nonneg;
-		// iter_nonneg=1;
-		// while(load[iter_nonneg]>=0 && iter_nonneg<4) iter_nonneg++;
-		// if(iter_nonneg<4) {if(t-fallpre>0.2) break;}
-		// else fallpre=t;
-
-		//timers
+		//output timers
 		static int swpre[5];
 		static double ttswpre[5]={};
 		double ttsw[5]={};
@@ -588,6 +587,7 @@ int main(int argc,char** argv)
 		for(int k=1;k<=4;k++) swpre[k]=sw[k];
 	}
 	
+	//output initial conditions for the future
 	if(newini)
 	{
 		for(int k=1;k<=4;k++) tswpre[k]-=T;
