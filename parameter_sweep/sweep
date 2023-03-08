@@ -1,11 +1,11 @@
-g++ -O2 quad_loco.cc -o walk
+g++ -O2 quad_loco.cc -o walk.o
 rm data/*
 for v in $(seq 1 0.35 50)
 do
-	./walk -T 200 -v0 $v -v1 $v -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .001 -tsw1 .1 -kr 0.5 -out_swp data/dur$v >/dev/null 2>/dev/null &
-	#./walk -T 200 -v0 $v -v1 $v -Gu0 -10 -Gu1 -10 -kv0 1000 -kv1 1000 -tsw0 .01 -tsw1 .1 -kr 0.3 -out_swp data/dur$v -swpini ini/force$v >/dev/null 2>/dev/null &
+	./walk.o -T 200 -v0 $v -v1 $v -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .001 -tsw1 .1 -kr 0.5 -out_swp data/dur$v >/dev/null 2>/dev/null &
+	#./walk.o -T 200 -v0 $v -v1 $v -Gu0 -10 -Gu1 -10 -kv0 1000 -kv1 1000 -tsw0 .01 -tsw1 .1 -kr 0.3 -out_swp data/dur$v -swpini ini/force$v >/dev/null 2>/dev/null &
 done
 wait
 echo "."
-#gnuplot t_F0_df.plot
-gnuplot t_v_df.plot
+#gnuplot DFplot_t_F0.plot
+gnuplot DFplot_t_v.plot

@@ -1,0 +1,26 @@
+g++ -O2 quad_loco.cc -o walk.o
+rm data/*
+
+for v in $(seq 1 0.35 40)
+do
+	./walk.o -T 300 -v0 $v -v1 $v -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .001 -tsw1 .1 -kr 0.5 -presetTROT -out_swp data/durlr$v >/dev/null 2>/dev/null &
+	#./walk.o -T 200 -v0 $v -v1 $v -Gu0 -10 -Gu1 -10 -kv0 1000 -kv1 1000 -tsw0 .01 -tsw1 .1 -kr 0.3 -presetTROT -out_swp data/durlr$v -swpini ini/force$v >/dev/null 2>/dev/null &
+done
+wait
+echo "left to right sweep done"
+
+for t in $(seq .001 .001 .1)
+do
+	./walk.o -T 300 -v0 15 -v1 0 -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .001 -tsw1 $t -kr 0.5 -presetTROT -out_swp data/durmd$t >/dev/null 2>/dev/null &
+done
+wait
+echo "middle down star sweep done"
+
+for t in $(seq .001 .001 .1)
+do
+	./walk.o -T 300 -v0 15 -v1 40 -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .001 -tsw1 $t -kr 0.5 -presetTROT -out_swp data/durmu$t >/dev/null 2>/dev/null &
+done
+wait
+echo "middle up star sweep done"
+
+gnuplot DFplot1.plot

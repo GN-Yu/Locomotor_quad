@@ -5,32 +5,136 @@
 
 using namespace std;
 
-//units: length - cm, time - s, mass - g
+// plot flags
+bool plot_parameter_sweep = false;
+bool plot_specified_velocity = false;
 
-double g=1000;	//garivtational accleration
-double H=3;		//hight
-double lf=1;	//half shoulder length
-double lh=1;	//half hip length
-double h=1;	//half width
-double l=5;	//half body length
-double L1=1*l, L2=0*l;		//front, hind part body length
-double L=L1+L2;				//total body length
-double D=sqrt(L*L+(lh+lf)*(lh+lf)); 	//diagonal length
-double freq=sqrt(g/H);			//inverted pendulum frequency
-double Tswc;				//typical swing time
+// quadruped body geometry
+// units: length - cm, time - s, mass - g
+double g=1000;                       //garivtational accleration
+double H=3;                          //hight
+double lf=1;                         //half shoulder length
+double lh=1;                         //half hip length
+double h=1;                          //half width
+double l=5;                          //half body length
+double L1=1*l, L2=0*l;               //front, hind part body length
+double L=L1+L2;                      //total body length
+double D=sqrt(L*L+(lh+lf)*(lh+lf));  //diagonal length
+double freq=sqrt(g/H);               //inverted pendulum frequency
+double Tswc;                         //typical swing time
 
-// double m=30; // mouse mass in g
-double I=L*L/3; // moment of inertia over mass
-double tau=.25;
+// double m   = 30;     // mouse mass in g
+double I   = L*L/3;  	// moment of inertia over mass
+double tau = .25;
 
-double DM[5]={0,1*L,1*L,1*L,1*L};	//max leg length
-static int sw[5]={0,1,0,0,1};
+double DM[5]     = {0,1*L,1*L,1*L,1*L};  //max leg length
+static int sw[5] = {0,1,0,0,0};
 
-int contraside[5]={0,2,1,4,3};
-int homoside[5]={0,3,4,1,2};
+int contralateral[5] = {0,2,1,4,3};
+int ipsilateral[5]   = {0,3,4,1,2};
 
-char colors[5][10]={"black","brown","blue","red","green"};
-char inifiles[4][50]={"","ini","slowini","fastini"};
+char colors[5][10]   = {"black","brown","blue","red","green"};
+char inifiles[4][50] = {"","ini","slowini","fastini"};
+
+double rnd() { return ((double) rand() / (RAND_MAX)) * 2 - 1; }
+
+
+void update_F(double xfh[], double yfh[], double xc, double yc, double F[][5]) {
+    double u1=xfh[1]-xc,u2=xfh[2]-xc,u3=xfh[3]-xc,u4=xfh[4]-xc;
+    double v1=yfh[1]-yc,v2=yfh[2]-yc,v3=yfh[3]-yc,v4=yfh[4]-yc;
+
+    double xi=u1+u2+u3+u4, eta=v1+v2+v3+v4;
+    double xi2=u1*u1+u2*u2+u3*u3+u4*u4, eta2=v1*v1+v2*v2+v3*v3+v4*v4;
+    double xieta=u1*v1+u2*v2+u3*v3+u4*v4;
+    double W=4*(xi2*eta2-xieta*xieta)-xi*(xi*eta2-xieta*eta)+eta*(xi*xieta-xi2*eta);
+    double lam1=-(xi2*eta2-xieta*xieta)/W;
+    double lam2=(xi*eta2-xieta*eta)/W;
+    double lam3=-(xi*xieta-xi2*eta)/W;
+
+    F[1][0]=-lam1-lam2*u1-lam3*v1;
+    F[2][0]=-lam1-lam2*u2-lam3*v2;
+    F[3][0]=-lam1-lam2*u3-lam3*v3;
+    F[4][0]=-lam1-lam2*u4-lam3*v4;
+
+    double W4=(u2*v3-u3*v2-u1*v3+u3*v1+u1*v2-u2*v1);
+    F[1][4]=(u2*v3-u3*v2)/W4;
+    F[2][4]=(-u1*v3+u3*v1)/W4;
+    F[3][4]=(u1*v2-u2*v1)/W4;
+
+    double W3=(u2*v4-u4*v2-u1*v4+u4*v1+u1*v2-u2*v1);
+    F[1][3]=(u2*v4-u4*v2)/W3;
+    F[2][3]=(-u1*v4+u4*v1)/W3;
+    F[4][3]=(u1*v2-u2*v1)/W3;
+
+    double W2=(u3*v4-u4*v3-u1*v4+u4*v1+u1*v3-u3*v1);
+    F[1][2]=(u3*v4-u4*v3)/W2;
+    F[3][2]=(-u1*v4+u4*v1)/W2;
+    F[4][2]=(u1*v3-u3*v1)/W2;
+
+    double W1=(u3*v4-u4*v3-u2*v4+u4*v2+u2*v3-u3*v2);
+    F[2][1]=(u3*v4-u4*v3)/W1;
+    F[3][1]=(-u2*v4+u4*v2)/W1;
+    F[4][1]=(u2*v3-u3*v2)/W1;
+}
+
+void update_corrected_swing_target(double theta,double vx,double vy,double vexp,double xfh0[],double yfh0[],double xfh1[],double yfh1[]){
+	//calculate corrections of limb positionings when swing
+	double vtor=vx*(yfh0[1]-yfh0[4])/D - vy*(xfh0[1]-xfh0[4])/D;
+	double vtol=-vx*(yfh0[2]-yfh0[3])/D + vy*(xfh0[2]-xfh0[3])/D;
+	double deltar=(L/2-L2)-vtor*D/2/h/freq+2*vexp/freq/(1+exp(freq*L/vexp));
+	double deltal=(L/2-L2)-vtol*D/2/h/freq+2*vexp/freq/(1+exp(freq*L/vexp));
+
+	xfh1[1]=xfh0[1]-deltar*cos(theta); yfh1[1]=yfh0[1]-deltar*sin(theta);
+	xfh1[4]=xfh0[4]-deltar*cos(theta); yfh1[4]=yfh0[4]-deltar*sin(theta);
+	xfh1[2]=xfh0[2]-deltal*cos(theta); yfh1[2]=yfh0[2]-deltal*sin(theta);
+	xfh1[3]=xfh0[3]-deltal*cos(theta); yfh1[3]=yfh0[3]-deltal*sin(theta);
+}
+
+void plotcmd_head() {
+	cerr<<"set terminal qt size 800,800"<<endl;
+	cerr<<"set xlabel ''"<<endl;
+	cerr<<"set ylabel ''"<<endl;
+	cerr<<"set zlabel ''"<<endl;
+	cerr<<"set key noautotitle"<<endl;
+	cerr<<"set xtics -50,5,1000"<<endl;
+	cerr<<"set ytics -50,5,2000"<<endl;
+	cerr<<"set ztics 0,1,5"<<endl;
+	cerr<<"set size ratio -1"<<endl;
+	cerr<<"set grid"<<endl;
+	cerr<<"set xyplane 0"<<endl;
+	cerr<<"set zrange [0:4]"<<endl;
+	cerr<<"set view 0,0,1,1"<<endl;
+	//cerr<<"set view equal xyz"<<endl;
+}
+
+void plotcmd_frame(int sw[],double xc,double yc,double hc,double xf,double yf,double xh,double yh,double xfh[],double yfh[],double xfh0[],double yfh0[]){
+	cerr<<"unset object"<<endl;
+	cerr<<"unset arrow"<<endl;
+	cerr<<"set xrange ["<<xc-20<<':'<<xc+20<<"]"<<endl;
+	cerr<<"set yrange ["<<yc-20<<':'<<yc+20<<"]"<<endl;
+	//cerr<<"set title \"V="<<int(vv)<<'\"'<<endl;
+	for(int i=1;i<=4;i++) {cerr<<"set object "<<i<<" circle front at "<<xfh[i]<<','<<yfh[i]<<",0 size "<<.2
+							<<" fc \""<<colors[i]<<"\" fs "<<(sw[i] ? "empty" : "solid")<<endl;}
+
+	cerr<<"set object 11 circle front at "<<xc<<','<<yc<<','<<hc<<" size "<<.2<<" fc \"black\""<<endl;
+	
+	if(!sw[1] && !sw[2]) cerr<<"set arrow 1 from "<<xfh[1]<<','<<yfh[1]<<",0 to "<<xfh[2]<<','<<yfh[2]<<",0 nohead dt 2"<<endl;
+	if(!sw[1] && !sw[3]) cerr<<"set arrow 2 from "<<xfh[1]<<','<<yfh[1]<<",0 to "<<xfh[3]<<','<<yfh[3]<<",0 nohead dt 2"<<endl;
+	if(!sw[1] && !sw[4]) cerr<<"set arrow 3 from "<<xfh[1]<<','<<yfh[1]<<",0 to "<<xfh[4]<<','<<yfh[4]<<",0 nohead dt 2"<<endl;
+	if(!sw[2] && !sw[3]) cerr<<"set arrow 4 from "<<xfh[2]<<','<<yfh[2]<<",0 to "<<xfh[3]<<','<<yfh[3]<<",0 nohead dt 2"<<endl;
+	if(!sw[2] && !sw[4]) cerr<<"set arrow 5 from "<<xfh[2]<<','<<yfh[2]<<",0 to "<<xfh[4]<<','<<yfh[4]<<",0 nohead dt 2"<<endl;
+	if(!sw[3] && !sw[4]) cerr<<"set arrow 6 from "<<xfh[3]<<','<<yfh[3]<<",0 to "<<xfh[4]<<','<<yfh[4]<<",0 nohead dt 2"<<endl;
+	cerr<<"set arrow 7 from "<<xfh0[1]<<','<<yfh0[1]<<','<<hc<<" to "<<xfh[1]<<','<<yfh[1]<<",0 nohead"<<endl;
+	cerr<<"set arrow 8 from "<<xfh0[2]<<','<<yfh0[2]<<','<<hc<<" to "<<xfh[2]<<','<<yfh[2]<<",0 nohead"<<endl;
+	cerr<<"set arrow 9 from "<<xfh0[3]<<','<<yfh0[3]<<','<<hc<<" to "<<xfh[3]<<','<<yfh[3]<<",0 nohead"<<endl;
+	cerr<<"set arrow 10 from "<<xfh0[4]<<','<<yfh0[4]<<','<<hc<<" to "<<xfh[4]<<','<<yfh[4]<<",0 nohead"<<endl;
+	cerr<<"set arrow 11 from "<<xh<<','<<yh<<','<<hc<<" to "<<xf<<','<<yf<<','<<hc<<" lt -1 lw 5 nohead"<<endl;
+	cerr<<"set arrow 12 from "<<xfh0[1]<<','<<yfh0[1]<<','<<hc<<" to "<<xfh0[2]<<','<<yfh0[2]<<','<<hc<<" nohead dt 3"<<endl;
+	cerr<<"set arrow 13 from "<<xfh0[3]<<','<<yfh0[3]<<','<<hc<<" to "<<xfh0[4]<<','<<yfh0[4]<<','<<hc<<" nohead dt 3"<<endl;
+	//cerr<<"set arrow 14 from "<<xfh0[3]<<','<<yfh0[3]<<','<<hc<<" to "<<xfh0[1]<<','<<yfh0[1]<<','<<hc<<" dt 3"<<endl;
+	//cerr<<"set arrow 15 from "<<xfh0[4]<<','<<yfh0[4]<<','<<hc<<" to "<<xfh0[2]<<','<<yfh0[2]<<','<<hc<<" dt 3"<<endl;
+	cerr<<"splot \"dat\" u 2:3:(0) w d"<<endl;
+}
 
 
 int main(int argc,char** argv)
@@ -45,8 +149,15 @@ int main(int argc,char** argv)
 	int ani_out=0;
 	int stridedata_out=0;
 	int cookini=0;
+	int iniWALK=0;
+	int iniTROT=0;
+	int iniPACE=0;
+	int iniRANDOM=0;
 	char fdur[50]="dur";
 	char ini_name[50]="ini";
+	int nicepic=0;
+	double start_out_time=1;
+	srand (time(NULL));
 
 	double Guini,Gufin; 
 	double Gvini,Gvfin;	
@@ -56,7 +167,6 @@ int main(int argc,char** argv)
 	double Gu, Gv, kv;	//thresholds
 	double F0;		//forces in the unit cm/s, original force F/lambda
 	
-	
 	double vv, vexp;//speed in magnitude, expected speed
 	double omega;	//body angular velocity
 	double theta;	//body angle
@@ -65,7 +175,8 @@ int main(int argc,char** argv)
     double vx, vy;	//velocity of COM
     double xf, yf, xh, yh;	//middile of shoulder and hip positions
     double xfh[5]={},yfh[5]={},xfh0[5]={},yfh0[5]={},xfh1[5]={},yfh1[5]={};
-    double &xfl=xfh[1], &xfr=xfh[2], &xhl=xfh[3], &xhr=xfh[4];
+
+	double &xfl=xfh[1], &xfr=xfh[2], &xhl=xfh[3], &xhr=xfh[4];
     double &yfl=yfh[1], &yfr=yfh[2], &yhl=yfh[3], &yhr=yfh[4];			//limb positions
     double &xfl0=xfh0[1], &xfr0=xfh0[2], &xhl0=xfh0[3], &xhr0=xfh0[4];
     double &yfl0=yfh0[1], &yfr0=yfh0[2], &yhl0=yfh0[3], &yhr0=yfh0[4];	//joint positions
@@ -78,14 +189,13 @@ int main(int argc,char** argv)
 	double d[5]={};	//the distance from a limb to its shoulder or hip
 
 	int swing_count;		//number of swinging limbs
-	double load[5]={};	//loads of each foot
+	double load[5]={};		//loads of each foot
     double F[5][5]={};
-	double total_load;	//total load
-	static double Gpre=0; //total supporting force of the previous time step
+	double total_load;		//total load
+	static double Gpre=0; 	//total supporting force of the previous time step
 	static double GP[5]={};
 	static double tswpre[5]={0,0,0,0,0};
 	double tsw[5]={};
-
 
 	double kr=0.5;	//damp of rotation
 	int inhib=0;	//indicator of contra/same side inhibitions
@@ -116,37 +226,30 @@ int main(int argc,char** argv)
 		else if(strcmp(argv[i],"-newslowi")==0) {newini=2;}
 		else if(strcmp(argv[i],"-newfasti")==0) {newini=3;}
 		else if(strcmp(argv[i],"-cookini")==0) {strcpy(inifiles[1],argv[++i]); newini=1;}
-		//else if(strcmp(argv[i],"-out_strideinfo")) {strcpy(fdur,"strideinfo"); stridedata_out=1;}
-		else if(strcmp(argv[i],"-out_swp")==0) {strcpy(fdur,argv[++i]); stridedata_out=1;}
 		else if(strcmp(argv[i],"-swpini")==0) {strcpy(inifiles[1],argv[++i]); ini=1;}
+		else if(strcmp(argv[i],"-presetWALK")==0) {iniWALK=1;}
+		else if(strcmp(argv[i],"-presetPACE")==0) {iniPACE=1;}
+		else if(strcmp(argv[i],"-presetTROT")==0) {iniTROT=1;}
+		else if(strcmp(argv[i],"-presetRANDOM")==0) {iniRANDOM=1;}
+		else if(strcmp(argv[i],"-out_swp")==0) {strcpy(fdur,argv[++i]); stridedata_out=1;}
+		else if(strcmp(argv[i],"-nicepic")==0) {nicepic=1;}
 		else return 1;
 	}
 
 	//output settings
 	ofstream out_timers(fdur);
+	ofstream out_ini(inifiles[newini]);
 	// ofstream out_timers("strideinfo");
 
-	if(ani_out)
-	{
-		cerr<<"set xtics 0,5,1000"<<endl;
-		cerr<<"set ytics 0,5,2000"<<endl;
-        cerr<<"set ztics 0,1,5"<<endl;
-		cerr<<"set size ratio -1"<<endl;
-		cerr<<"set grid"<<endl;
-		cerr<<"set xlabel 'x'"<<endl;
-		cerr<<"set ylabel 'y'"<<endl;
-        cerr<<"set zlabel 'z'"<<endl;
-        cerr<<"set xyplane 0"<<endl;
-        cerr<<"set zrange [0:4]"<<endl;
-        cerr<<"set view equal xyz"<<endl;
-	}
-
+	if(ani_out) plotcmd_head();
+	if(nicepic) {start_out_time=5;}
 
 	//initialize locomotion parameters
 	F0=Fini;
 	Gu=Guini;
 	Gv=Gvini;
 	kv=kvini;
+	Tswc=Tswcini;
 
 	if(ini==0)
 	{
@@ -157,37 +260,58 @@ int main(int argc,char** argv)
 
 		xf=xc+L1*cos(theta), yf=yc+L1*sin(theta);
 		xh=xc-L2*cos(theta), yh=yc-L2*sin(theta);
-		xfl0=xf-lf*sin(theta), xfr0=xf+lf*sin(theta);
-		xhl0=xh-lh*sin(theta), xhr0=xh+lh*sin(theta);
-		yfl0=yf+lf*cos(theta), yfr0=yf-lf*cos(theta);
-		yhl0=yh+lh*cos(theta), yhr0=yh-lh*cos(theta);
+		xfh0[1]=xf-lf*sin(theta), xfh0[2]=xf+lf*sin(theta);
+		xfh0[3]=xh-lh*sin(theta), xfh0[4]=xh+lh*sin(theta);
+		yfh0[1]=yf+lf*cos(theta), yfh0[2]=yf-lf*cos(theta);
+		yfh0[3]=yh+lh*cos(theta), yfh0[4]=yh-lh*cos(theta);
 
 		double qq=L/sqrt(2)/2;
-		xfl=xfl0, yfl=yfl0;
-		xfr=xfr0-qq, yfr=yfr0-qq;
-		xhl=xhl0-qq, yhl=yhl0-qq+.001;
-		xhr=xhr0, yhr=yhr0;
+		double r=0.3*qq;
 
-		// double pp=L/sqrt(2)/2+0.2;
-		// xfl=xfl0, yfl=yfl0;
-		// xfr=xfr0-qq, yfr=yfr0-qq;
-		// xhl=xhl0-pp, yhl=yhl0-pp;
-		// xhr=xhr0, yhr=yhr0;
-
-		// xfl=xfl0, yfl=yfl0;
-		// xfr=xfr0-qq, yfr=yfr0-qq;
-		// xhl=xhl0, yhl=yhl0;
-		// xhr=xhr0-qq, yhr=yhr0-qq;
-
-		// xfl=xfl0-3*cos(theta); yfl=yfl0-3*sin(theta);
-		// xfr=xfr0; yfr=yfr0;
-		// xhl=xhl0; yhl=yhl0;
-		// xhr=xhr0-3*cos(theta); yhr=yhr0-3*sin(theta);
+		if(iniWALK==1)
+		{
+			sw[1]=0; sw[2]=1; sw[3]=0; sw[4]=0; 
+			xfh[1]=xfh0[1], yfh[1]=yfh0[1];
+			xfh[2]=xfh0[2]-qq, yfh[2]=yfh0[2]-qq;
+			xfh[3]=xfh0[3], yfh[3]=yfh0[3];
+			xfh[4]=xfh0[4]-qq, yfh[4]=yfh0[4]-qq;
+		}
+		else if(iniTROT==1)
+		{
+			sw[1]=1; sw[2]=0; sw[3]=0; sw[4]=1; 
+			xfh[1]=xfh0[1], yfh[1]=yfh0[1];
+			xfh[2]=xfh0[2]-qq, yfh[2]=yfh0[2]-qq;
+			xfh[3]=xfh0[3]-qq, yfh[3]=yfh0[3]-qq+.001;
+			xfh[4]=xfh0[4], yfh[4]=yfh0[4];
+		}
+		else if(iniPACE==1)
+		{
+			sw[1]=1; sw[2]=0; sw[3]=1; sw[4]=0;
+			xfh[1]=xfh0[1], yfh[1]=yfh0[1];
+			xfh[2]=xfh0[2]-qq, yfh[2]=yfh0[2]-qq;
+			xfh[3]=xfh0[3], yfh[3]=yfh0[3];
+			xfh[4]=xfh0[4]-qq, yfh[4]=yfh0[4]-qq;
+		}
+		else if(iniRANDOM=1)
+		{
+			sw[1]=1; sw[2]=0; sw[3]=0; sw[4]=1; 
+			xfh[1]=xfh0[1]; yfh[1]=yfh0[1];
+			xfh[2]=xfh0[2]-qq+r*rnd(); yfh[2]=yfh0[2]-qq+r*rnd();
+			xfh[3]=xfh0[3]-qq+r*rnd(); yfh[3]=yfh0[3]-qq+r*rnd();
+			xfh[4]=xfh0[4]; yfh[4]=yfh0[4];
+		}
+		else
+		{
+			xfh[1]=xfh0[1]-3*cos(theta); yfh[1]=yfh0[1]-3*sin(theta);
+			xfh[2]=xfh0[2]; yfh[2]=yfh0[2];
+			xfh[3]=xfh0[3]; yfh[3]=yfh0[3];
+			xfh[4]=xfh0[4]-3*cos(theta); yfh[4]=yfh0[4]-3*sin(theta);
+		}
 	}
 	else
 	{
-		ifstream(inifiles[ini])>>xc>>yc>>vx>>vy>>theta>>omega>>Gpre
-		>>xfl>>xfr>>xhl>>xhr>>yfl>>yfr>>yhl>>yhr
+		ifstream(inifiles[ini])>>xc>>yc>>vx>>vy>>hc>>theta>>omega>>Gpre
+		>>xfh[1]>>xfh[2]>>xfh[3]>>xfh[4]>>yfh[1]>>yfh[2]>>yfh[3]>>yfh[4]
 		>>sw[1]>>sw[2]>>sw[3]>>sw[4]
 		>>tswpre[1]>>tswpre[2]>>tswpre[3]>>tswpre[4];
 	
@@ -195,61 +319,44 @@ int main(int argc,char** argv)
 		xc=0; yc=0;	//reset to (0,0) position
 		xf=xc+L1*cos(theta), yf=yc+L1*sin(theta);
 		xh=xc-L2*cos(theta), yh=yc-L2*sin(theta);
-		xfl0=xf-lf*sin(theta), xfr0=xf+lf*sin(theta);
-		xhl0=xh-lh*sin(theta), xhr0=xh+lh*sin(theta);
-		yfl0=yf+lf*cos(theta), yfr0=yf-lf*cos(theta);
-		yhl0=yh+lh*cos(theta), yhr0=yh-lh*cos(theta);
+		xfh0[1]=xf-lf*sin(theta), xfh0[2]=xf+lf*sin(theta);
+		xfh0[3]=xh-lh*sin(theta), xfh0[4]=xh+lh*sin(theta);
+		yfh0[1]=yf+lf*cos(theta), yfh0[2]=yf-lf*cos(theta);
+		yfh0[3]=yh+lh*cos(theta), yfh0[4]=yh-lh*cos(theta);
 	}
-	vv=sqrt(vx*vx+vy*vy);
+	vv=hypot(vx,vy);
 	vexp=vv;
 
 
 	//step cycles
 	for(double t=0;t<=T;t+=dt)
 	{
-		Zx=0; Zy=0;
-		total_load=0;
 		swing_count=0;
-		for(int i=1;i<=4;i++) load[i]=0;
-
 		for(int i=1;i<=4;i++) if(sw[i]) swing_count++;	//swing legs count
 
-        double u1=xfh[1]-xc,u2=xfh[2]-xc,u3=xfh[3]-xc,u4=xfh[4]-xc;
-        double v1=yfh[1]-yc,v2=yfh[2]-yc,v3=yfh[3]-yc,v4=yfh[4]-yc;
+		if(nicepic && t>=start_out_time)
+		{
+			F0=Fini+(Ffin-Fini)*(t-start_out_time)/(T-start_out_time);
+			Gu=Guini+(Gufin-Guini)*(t-start_out_time)/(T-start_out_time);
+			Gv=Gvini+(Gvfin-Gvini)*(t-start_out_time)/(T-start_out_time);
+			kv=kvini+(kvfin-kvini)*(t-start_out_time)/(T-start_out_time);
+			Tswc=Tswcini+(Tswcfin-Tswcini)*(t-start_out_time)/(T-start_out_time);
+		}
+		else if(!nicepic)
+		{
+			F0=Fini+(Ffin-Fini)*t/T;
+			Gu=Guini+(Gufin-Guini)*t/T;
+			Gv=Gvini+(Gvfin-Gvini)*t/T;
+			kv=kvini+(kvfin-kvini)*t/T;
+			Tswc=Tswcini+(Tswcfin-Tswcini)*t/T;
+		}
 
-        double xi=u1+u2+u3+u4, eta=v1+v2+v3+v4;
-        double xi2=u1*u1+u2*u2+u3*u3+u4*u4, eta2=v1*v1+v2*v2+v3*v3+v4*v4;
-        double xieta=u1*v1+u2*v2+u3*v3+u4*v4;
-        double W=4*(xi2*eta2-xieta*xieta)-xi*(xi*eta2-xieta*eta)+eta*(xi*xieta-xi2*eta);
-        double lam1=-(xi2*eta2-xieta*xieta)/W;
-        double lam2=(xi*eta2-xieta*eta)/W;
-        double lam3=-(xi*xieta-xi2*eta)/W;
+		//load calculations
+		for(int i=1;i<=4;i++) load[i]=0;
+		total_load=0;
+		update_F(xfh, yfh, xc, yc, F);
 
-        F[1][0]=-lam1-lam2*u1-lam3*v1;
-        F[2][0]=-lam1-lam2*u2-lam3*v2;
-        F[3][0]=-lam1-lam2*u3-lam3*v3;
-        F[4][0]=-lam1-lam2*u4-lam3*v4;
-        
-        double W4=(u2*v3-u3*v2-u1*v3+u3*v1+u1*v2-u2*v1);
-        F[1][4]=(u2*v3-u3*v2)/W4;
-        F[2][4]=(-u1*v3+u3*v1)/W4;
-        F[3][4]=(u1*v2-u2*v1)/W4;
-            
-        double W3=(u2*v4-u4*v2-u1*v4+u4*v1+u1*v2-u2*v1);
-        F[1][3]=(u2*v4-u4*v2)/W3;
-        F[2][3]=(-u1*v4+u4*v1)/W3;
-        F[4][3]=(u1*v2-u2*v1)/W3;
-            
-        double W2=(u3*v4-u4*v3-u1*v4+u4*v1+u1*v3-u3*v1);
-        F[1][2]=(u3*v4-u4*v3)/W2;
-        F[3][2]=(-u1*v4+u4*v1)/W2;
-        F[4][2]=(u1*v3-u3*v1)/W2;
-            
-        double W1=(u3*v4-u4*v3-u2*v4+u4*v2+u2*v3-u3*v2);
-        F[2][1]=(u3*v4-u4*v3)/W1;
-        F[3][1]=(-u2*v4+u4*v2)/W1;
-        F[4][1]=(u2*v3-u3*v2)/W1;
-
+		Zx=0; Zy=0;
         if(swing_count==0)
         {
             for(int k=1;k<=4;k++) load[k]=F[k][0];
@@ -295,31 +402,20 @@ int main(int argc,char** argv)
 
 		if(hc<0) 
 		{
-			cerr<<"fall"<<endl;
+			//cerr<<"fall"<<endl;
 			break;
 		}
 		else if(total_load<0)
 		{
-			cerr<<"fly"<<endl;
+			//cerr<<"fly"<<endl;
 			break;
 		}
 
-		//calculate corrections of limb positionings when swing
-		for(int i=1;i<=4;i++) {d[i]=hypot(xfh0[i]-xfh[i],yfh0[i]-yfh[i]);}
-		double vtor=vx*(yfl0-yhr0)/D - vy*(xfl0-xhr0)/D;
-		double vtol=-vx*(yfr0-yhl0)/D + vy*(xfr0-xhl0)/D;
-		double deltar=(L/2-L2)-vtor*D/2/h/freq+2*vexp/freq/(1+exp(freq*L/vexp));
-		double deltal=(L/2-L2)-vtol*D/2/h/freq+2*vexp/freq/(1+exp(freq*L/vexp));
-
-		xfl1=xfl0-deltar*cos(theta); yfl1=yfl0-deltar*sin(theta);
-		xhr1=xhr0-deltar*cos(theta); yhr1=yhr0-deltar*sin(theta);
-		xfr1=xfr0-deltal*cos(theta); yfr1=yfr0-deltal*sin(theta);
-		xhl1=xhl0-deltal*cos(theta); yhl1=yhl0-deltal*sin(theta);
-
+		//swing limb movement
 		double taus=.0001;
 		double Vswc=(L+vv*Tswc)/Tswc;
+		if(cor) update_corrected_swing_target(theta,vx,vy,vexp,xfh0,yfh0,xfh1,yfh1);
 
-		//swing limb movement
 		for(int i=1;i<=4;i++) if(sw[i])
 		{
 			if(cor) {xfh[i]+=(xfh1[i]-xfh[i])*dt/taus; yfh[i]+=(yfh1[i]-yfh[i])*dt/taus;}
@@ -327,32 +423,33 @@ int main(int argc,char** argv)
 		}
 
 		//horizontal force calculations
-		F0=Fini+(Ffin-Fini)*t/T;	//F0 update
 		double Fx[5]={},Fy[5]={};
 		double delta=0*omega;
 		double FL=(1+delta)*F0, FR=(1-delta)*F0;
 		
-		if(!sw[1] && d[1]>0.) { Fx[1]=FL*(xfl0-xfl)/d[1]; Fy[1]=FL*(yfl0-yfl)/d[1]; }
-		if(!sw[2] && d[2]>0.) { Fx[2]=FR*(xfr0-xfr)/d[2]; Fy[2]=FR*(yfr0-yfr)/d[2]; }
-		if(!sw[3] && d[3]>0.) { Fx[3]=FL*(xhl0-xhl)/d[3]; Fy[3]=FL*(yhl0-yhl)/d[3]; }
-		if(!sw[4] && d[4]>0.) { Fx[4]=FR*(xhr0-xhr)/d[4]; Fy[4]=FR*(yhr0-yhr)/d[4]; }
+		for(int i=1;i<=4;i++) {d[i]=hypot(xfh0[i]-xfh[i],yfh0[i]-yfh[i]);}
+
+		if(!sw[1] && d[1]>0.) { Fx[1]=FL*(xfh0[1]-xfh[1])/d[1]; Fy[1]=FL*(yfh0[1]-yfh[1])/d[1]; }
+		if(!sw[2] && d[2]>0.) { Fx[2]=FR*(xfh0[2]-xfh[2])/d[2]; Fy[2]=FR*(yfh0[2]-yfh[2])/d[2]; }
+		if(!sw[3] && d[3]>0.) { Fx[3]=FL*(xfh0[3]-xfh[3])/d[3]; Fy[3]=FL*(yfh0[3]-yfh[3])/d[3]; }
+		if(!sw[4] && d[4]>0.) { Fx[4]=FR*(xfh0[4]-xfh[4])/d[4]; Fy[4]=FR*(yfh0[4]-yfh[4])/d[4]; }
 
 		xc+=vx*dt;
 		yc+=vy*dt;
 		theta+=omega*dt;
 		vx+=((Fx[1]+Fx[2]+Fx[3]+Fx[4])/tau-vx/tau+g*Zx/H)*dt;
 		vy+=((Fy[1]+Fy[2]+Fy[3]+Fy[4])/tau-vy/tau+g*Zy/H)*dt;
-		vv=sqrt(vx*vx+vy*vy);
+		vv=hypot(vx,vy);
 
 		double tauvv=1;
 		vexp+=(vv-vexp)*dt/tauvv;
 
 		xf=xc+L1*cos(theta); yf=yc+L1*sin(theta);
 		xh=xc-L2*cos(theta); yh=yc-L2*sin(theta);
-		xfl0=xf-lf*sin(theta), xfr0=xf+lf*sin(theta);
-		xhl0=xh-lh*sin(theta), xhr0=xh+lh*sin(theta);
-		yfl0=yf+lf*cos(theta), yfr0=yf-lf*cos(theta);
-		yhl0=yh+lh*cos(theta), yhr0=yh-lh*cos(theta);
+		xfh0[1]=xf-lf*sin(theta), xfh0[2]=xf+lf*sin(theta);
+		xfh0[3]=xh-lh*sin(theta), xfh0[4]=xh+lh*sin(theta);
+		yfh0[1]=yf+lf*cos(theta), yfh0[2]=yf-lf*cos(theta);
+		yfh0[3]=yh+lh*cos(theta), yfh0[4]=yh-lh*cos(theta);
 
 		double M=0;
 		for(int k=1;k<=4;k++) {M+=(xfh[k]-xc)*Fy[k]-(yfh[k]-yc)*Fx[k];}
@@ -370,11 +467,6 @@ int main(int argc,char** argv)
 		
 		omega+=(M/I-omega+MA)*dt/tau;
 		// omega+=(M/I-omega)*dt/tau;
-
-		Gu=Guini+(Gufin-Guini)*t/T;
-		Gv=Gvini+(Gvfin-Gvini)*t/T;
-		kv=kvini+(kvfin-kvini)*t/T;
-        Tswc=Tswcini+(Tswcfin-Tswcini)*t/T;
 
 		
 		for(int k=1;k<=4;k++) tsw[k]=0;
@@ -394,7 +486,7 @@ int main(int argc,char** argv)
 
 		for(int k=1;k<=4;k++) if(!sw[k]) if(GP[k]>load[k] && load[k]<Gu)
 		{
-			if(inhib) if(sw[contraside[k]]==1 || sw[homoside[k]]==1) {continue;}
+			//if(inhib) if(sw[contralateral[k]]==1 || sw[ipsilateral[k]]==1) {continue;}
 			sw[k]=1;
 			swing_count++;
 			tswpre[k]=t;
@@ -405,15 +497,17 @@ int main(int argc,char** argv)
 			sw[k]=1;
 			swing_count++;
             tswpre[k]=t;
-			if(inhib)
+			if(inhib && k<=2)
 			{
-				if(sw[contraside[k]]==1) {sw[contraside[k]]=0; swing_count--;}
-				if(sw[homoside[k]]==1) {sw[homoside[k]]=0; swing_count--;}
+				//if(sw[contralateral[k]]==1) {sw[contralateral[k]]=0; swing_count--;}
+				if(sw[ipsilateral[k]]==1) {sw[ipsilateral[k]]=0; swing_count--;}
 			}
 		}	//strong lifting conditions
+
+		double balance=total_load>0? (Gpre-total_load)/dt:0;
         
-		//if((total_load!=0 && -(total_load-Gpre)/dt>kv) || swing_count==4)
-		if(total_load!=0 && -(total_load-Gpre)/dt>kv)
+		//if(balance>kv)
+		if(balance>kv || swing_count==4)
 		{
 			int kmax=0;
 			for(int k=1;k<=4;k++) if(sw[k]) {tsw[k]=t-tswpre[k];}
@@ -432,7 +526,14 @@ int main(int argc,char** argv)
 		for(int k=1;k<=4;k++) GP[k]=load[k];
 		Gpre=total_load;
 
-	
+		//falling indicator: if there is at least one leg having negative load for a long time (say 0.2s), it is falling
+		// static double fallpre=0;
+		// int iter_nonneg;
+		// iter_nonneg=1;
+		// while(load[iter_nonneg]>=0 && iter_nonneg<4) iter_nonneg++;
+		// if(iter_nonneg<4) {if(t-fallpre>0.2) break;}
+		// else fallpre=t;
+
 		//output data
 		if(ani_out && int(t/dt)%int(DT/dt)==0)
 		{
@@ -442,43 +543,11 @@ int main(int argc,char** argv)
 			// cout<<'\t'<<deltal<<'\t'<<deltar;
 			cout<<endl;
 			
-			cerr<<"unset object"<<endl;
-			cerr<<"unset arrow"<<endl;
-			cerr<<"set xrange ["<<xc-20<<':'<<xc+20<<"]"<<endl;
-			cerr<<"set yrange ["<<yc-20<<':'<<yc+20<<"]"<<endl;
-			cerr<<"set title \"V="<<int(vv)<<'\"'<<endl;
-			for(int i=1;i<=4;i++) {cerr<<"set object "<<i<<" circle front at "<<xfh[i]<<','<<yfh[i]<<",0 size "<<.2
-									<<" fc \""<<colors[i]<<"\" fs "<<(sw[i] ? "empty" : "solid")<<endl;}
-
-			cerr<<"set object 11 circle front at "<<xc<<','<<yc<<','<<hc<<" size "<<.2<<" fc \"black\""<<endl;
-			
-			if(!sw[1] && !sw[2]) cerr<<"set arrow 1 from "<<xfl<<','<<yfl<<",0 to "<<xfr<<','<<yfr<<",0 nohead dt 2"<<endl;
-			if(!sw[1] && !sw[3]) cerr<<"set arrow 2 from "<<xfl<<','<<yfl<<",0 to "<<xhl<<','<<yhl<<",0 nohead dt 2"<<endl;
-			if(!sw[1] && !sw[4]) cerr<<"set arrow 3 from "<<xfl<<','<<yfl<<",0 to "<<xhr<<','<<yhr<<",0 nohead dt 2"<<endl;
-			if(!sw[2] && !sw[3]) cerr<<"set arrow 4 from "<<xfr<<','<<yfr<<",0 to "<<xhl<<','<<yhl<<",0 nohead dt 2"<<endl;
-			if(!sw[2] && !sw[4]) cerr<<"set arrow 5 from "<<xfr<<','<<yfr<<",0 to "<<xhr<<','<<yhr<<",0 nohead dt 2"<<endl;
-			if(!sw[3] && !sw[4]) cerr<<"set arrow 6 from "<<xhl<<','<<yhl<<",0 to "<<xhr<<','<<yhr<<",0 nohead dt 2"<<endl;
-			cerr<<"set arrow 7 from "<<xfl0<<','<<yfl0<<','<<hc<<" to "<<xfl<<','<<yfl<<",0 nohead"<<endl;
-			cerr<<"set arrow 8 from "<<xfr0<<','<<yfr0<<','<<hc<<" to "<<xfr<<','<<yfr<<",0 nohead"<<endl;
-			cerr<<"set arrow 9 from "<<xhl0<<','<<yhl0<<','<<hc<<" to "<<xhl<<','<<yhl<<",0 nohead"<<endl;
-			cerr<<"set arrow 10 from "<<xhr0<<','<<yhr0<<','<<hc<<" to "<<xhr<<','<<yhr<<",0 nohead"<<endl;
-			cerr<<"set arrow 11 from "<<xh<<','<<yh<<','<<hc<<" to "<<xf<<','<<yf<<','<<hc<<" lt -1 lw 5 nohead"<<endl;
-			cerr<<"set arrow 12 from "<<xfl0<<','<<yfl0<<','<<hc<<" to "<<xfr0<<','<<yfr0<<','<<hc<<" nohead dt 3"<<endl;
-			cerr<<"set arrow 13 from "<<xhl0<<','<<yhl0<<','<<hc<<" to "<<xhr0<<','<<yhr0<<','<<hc<<" nohead dt 3"<<endl;
-			cerr<<"set arrow 14 from "<<xhl0<<','<<yhl0<<','<<hc<<" to "<<xfl0<<','<<yfl0<<','<<hc<<" dt 3"<<endl;
-			cerr<<"set arrow 15 from "<<xhr0<<','<<yhr0<<','<<hc<<" to "<<xfr0<<','<<yfr0<<','<<hc<<" dt 3"<<endl;
-			cerr<<"splot \"dat\" u 2:3:(0) w d"<<endl;
+			// animation frames commands using gnuplot
+			plotcmd_frame(sw,xc,yc,hc,xf,yf,xh,yh,xfh,yfh,xfh0,yfh0);
 		}
 
-		//falling indicator: if there is at least one leg having negative load for a long time (say 0.2s), it is falling
-		// static double fallpre=0;
-		// int iter_nonneg;
-		// iter_nonneg=1;
-		// while(load[iter_nonneg]>=0 && iter_nonneg<4) iter_nonneg++;
-		// if(iter_nonneg<4) {if(t-fallpre>0.2) break;}
-		// else fallpre=t;
-
-		//timers
+		//output timers
 		static int swpre[5];
 		static double ttswpre[5]={};
 		double ttsw[5]={};
@@ -486,29 +555,45 @@ int main(int argc,char** argv)
 		double ttst[5]={};
 		static double stridepre=0;
 		static double stridetime=0;
+		static double dutyfacor_pre=0;
+		static double vvpre=0;
 		for(int k=1;k<=4;k++) if(swpre[k] && !sw[k])	//stop swing tracker
 		{
-			ttstpre[k]=t; 
 			ttsw[k]=t-ttswpre[k];
-			if(k==1) { stridetime=t-stridepre; stridepre=t; }
+			ttstpre[k]=t; 
+			if(k==1) { stridetime=t-stridepre; stridepre=t; }			
 			//if(stridedata_out==1 && stridepre!=0) out_timers<<t<<'\t'<<vv<<'\t'<<k<<'\t'<<ttsw[k]<<'\t'<<-1<<'\t'<<1/stridetime<<endl;
 		}
 		for(int k=1;k<=4;k++) if(!swpre[k] && sw[k])	//start swing tracker
 		{
 			ttst[k]=t-ttstpre[k];
 			ttswpre[k]=t;
-			//if(stridepre!=0) out_timers<<Tswc<<'\t'<<F0<<'\t'<<k<<'\t'<<-1<<'\t'<<ttst[k]<<'\t'<<(100*ttst[k]/stridetime)<<endl;
-			if(stridepre!=0) out_timers<<t<<'\t'<<vv<<'\t'<<k<<'\t'<<-1<<'\t'<<ttst[k]<<'\t'<<1/stridetime<<endl;
+
+			double dutyfactor=(stridetime==0? 0:(100*ttst[k]/stridetime));
+
+			if(t>10 && dutyfactor-dutyfacor_pre>10) return 0;
+
+			if(t>=1 && stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<(stridetime-ttst[k])<<'\t'<<dutyfactor<<endl;
+			//if(stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<ttsw[k]<<'\t'<<dutyfactor<<endl;
+			// Limb (k) is starts swing at time (t) with parameters (F0), (kv), (Gu) and (Tsw);
+			// it has velocity (vv), stance time (ttst[k]), previous swing time (ttsw[k]) and duty factor (dutyfactor).
+			
+			//if(stridepre!=0) out_timers<<kv<<'\t'<<F0<<'\t'<<vv<<'\t'<<k<<'\t'<<-1<<'\t'<<ttst[k]<<'\t'<<dutyfactor<<endl;
+			//if(stridepre!=0 && abs(dutyfactor-dutyfacor_pre)<0.15 && abs(vv-vvpre)<0.5) out_timers<<Tswc<<'\t'<<F0<<'\t'<<vv<<'\t'<<k<<'\t'<<-1<<'\t'<<ttst[k]<<'\t'<<dutyfactor<<endl;
+			dutyfacor_pre=dutyfactor;
+			vvpre=vv;
+			//if(stridedata_out==1 && stridepre!=0) out_timers<<t<<'\t'<<vv<<'\t'<<k<<'\t'<<-1<<'\t'<<ttst[k]<<'\t'<<1/stridetime<<endl; && abs(Tswc-ttsw[k])<0.04
 		}
 		for(int k=1;k<=4;k++) swpre[k]=sw[k];
 	}
 	
+	//output initial conditions for the future
 	if(newini)
 	{
 		for(int k=1;k<=4;k++) tswpre[k]-=T;
-		ofstream(inifiles[newini])<<xc<<'\t'<<yc<<'\t'<<vx<<'\t'<<vy<<'\t'<<theta<<'\t'<<omega<<'\t'<<Gpre<<'\t'
-		<<xfl<<'\t'<<xfr<<'\t'<<xhl<<'\t'<<xhr<<'\t'
-		<<yfl<<'\t'<<yfr<<'\t'<<yhl<<'\t'<<yhr<<'\t'
+		out_ini<<xc<<'\t'<<yc<<'\t'<<vx<<'\t'<<vy<<'\t'<<hc<<'\t'<<theta<<'\t'<<omega<<'\t'<<Gpre<<'\t'
+		<<xfh[1]<<'\t'<<xfh[2]<<'\t'<<xfh[3]<<'\t'<<xfh[4]<<'\t'
+		<<yfh[1]<<'\t'<<yfh[2]<<'\t'<<yfh[3]<<'\t'<<yfh[4]<<'\t'
 		<<sw[1]<<'\t'<<sw[2]<<'\t'<<sw[3]<<'\t'<<sw[4]<<'\t'
 		<<tswpre[1]<<'\t'<<tswpre[2]<<'\t'<<tswpre[3]<<'\t'<<tswpre[4]<<endl;
 	}
