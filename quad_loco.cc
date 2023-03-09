@@ -32,6 +32,9 @@ static int sw[5] = {0,1,0,0,0};
 
 int contralateral[5] = {0,2,1,4,3};
 int ipsilateral[5]   = {0,3,4,1,2};
+int diagnal[5]       = {0,4,3,2,1};
+
+double balance_sensory[5]={0,1,1,1,1};
 
 char colors[5][10]   = {"black","brown","blue","red","green"};
 char inifiles[4][50] = {"","ini","slowini","fastini"};
@@ -505,22 +508,24 @@ int main(int argc,char** argv)
 		}	//strong lifting conditions
 
 		double balance=total_load>0? (Gpre-total_load)/dt:0;
+		
+		for(int k=1;k<=4;k++) if(balance>(sw[diagnal[k]]? kv:0)) sw[k]=0;
         
 		//if(balance>kv)
-		if(balance>kv || swing_count==4)
-		{
-			int kmax=0;
-			for(int k=1;k<=4;k++) if(sw[k]) {tsw[k]=t-tswpre[k];}
-			for(int k=1;k<=4;k++) if(tsw[k]>tsw[kmax]) {kmax=k;}
-            if(swing_count==2)
-			{
-				int s=1; while(!sw[s] || s==kmax) s++;
-				if(F[kmax][s]<0.) continue;
-			}
-			else if(swing_count==1 && F[kmax][0]<0.) continue;
-			sw[kmax]=0;
-			swing_count--;
-		}	//stop swing a leg when lose balance
+		// if(balance>kv || swing_count==4)
+		// {
+		// 	int kmax=0;
+		// 	for(int k=1;k<=4;k++) if(sw[k]) {tsw[k]=t-tswpre[k];}
+		// 	for(int k=1;k<=4;k++) if(tsw[k]>tsw[kmax]) {kmax=k;}
+        //     if(swing_count==2)
+		// 	{
+		// 		int s=1; while(!sw[s] || s==kmax) s++;
+		// 		if(F[kmax][s]<0.) continue;
+		// 	}
+		// 	else if(swing_count==1 && F[kmax][0]<0.) continue;
+		// 	sw[kmax]=0;
+		// 	swing_count--;
+		// }	//stop swing a leg when lose balance
 
 
 		for(int k=1;k<=4;k++) GP[k]=load[k];
