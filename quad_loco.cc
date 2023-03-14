@@ -202,6 +202,7 @@ int main(int argc,char** argv)
 
 	double kr=0.5;	//damp of rotation
 	int inhib=0;	//indicator of contra/same side inhibitions
+	int diff_kv=0;
 
 	//initialize parameters
 	for(int i=1;i<argc;i++)
@@ -220,6 +221,7 @@ int main(int argc,char** argv)
         else if(strcmp(argv[i],"-tsw0")==0) Tswcini=atof(argv[++i]);
 		else if(strcmp(argv[i],"-tsw1")==0) Tswcfin=atof(argv[++i]);
 		else if(strcmp(argv[i],"-kr")==0) kr=atof(argv[++i]);
+		else if(strcmp(argv[i],"-diff_kv")==0) {diff_kv=1;}
 		else if(strcmp(argv[i],"-inhib")==0) {inhib=1;}
 		else if(strcmp(argv[i],"-cor")==0) {cor=1;}
 		else if(strcmp(argv[i],"-i")==0) {ini=1;}
@@ -509,23 +511,61 @@ int main(int argc,char** argv)
 
 		double balance=total_load>0? (Gpre-total_load)/dt:0;
 		
-		for(int k=1;k<=4;k++) if(balance>(sw[diagnal[k]]? kv:0)) sw[k]=0;
-        
-		//if(balance>kv)
-		// if(balance>kv || swing_count==4)
+		// for(int k=1;k<=4;k++) if(balance>(sw[diagnal[k]]? kv:0)) sw[k]=0;
+		// for(int k=1;k<=4;k++) if(balance>kv) sw[k]=0;
+		
+
+		if(balance>0)
+		{
+			int kmax=0;
+			for(int k=1;k<=4;k++) if(sw[k]) {tsw[k]=t-tswpre[k];}
+			for(int k=1;k<=4;k++) if(tsw[k]>tsw[kmax]) {kmax=k;}
+			int kmax_positiveload=1;
+            if(swing_count==2)
+			{
+				int s=1; while(!sw[s] || s==kmax) s++;
+				if(F[kmax][s]<0.) kmax_positiveload=0;
+			}
+			else if(swing_count==1 && F[kmax][0]<0.) kmax_positiveload=0;
+			
+			double losing_balance_threshold[5]={0,kv,kv,kv,kv};
+			if(diff_kv) for(int k=1;k<=4;k++)
+			{
+				if(k>2) {losing_balance_threshold[k]=0;}
+				else {losing_balance_threshold[k]=(sw[diagnal[k]]? kv:0);}
+			}
+			if(kmax_positiveload && (balance>losing_balance_threshold[kmax]))
+			{
+				sw[kmax]=0;
+				swing_count--;
+			}
+		}	//stop swing a leg when lose balance
+		// if(balance>kv)
 		// {
 		// 	int kmax=0;
 		// 	for(int k=1;k<=4;k++) if(sw[k]) {tsw[k]=t-tswpre[k];}
 		// 	for(int k=1;k<=4;k++) if(tsw[k]>tsw[kmax]) {kmax=k;}
+		// 	int kmax_positiveload=1;
         //     if(swing_count==2)
 		// 	{
 		// 		int s=1; while(!sw[s] || s==kmax) s++;
-		// 		if(F[kmax][s]<0.) continue;
+		// 		if(F[kmax][s]<0.) kmax_positiveload=0;
 		// 	}
-		// 	else if(swing_count==1 && F[kmax][0]<0.) continue;
+		// 	else if(swing_count==1 && F[kmax][0]<0.) kmax_positiveload=0;
+		// 	if(kmax_positiveload)
+		// 	{
+		// 		sw[kmax]=0;
+		// 		swing_count--;
+		// 	}
+		// }	//stop swing a leg when lose balance
+		// if(swing_count==4)
+		// {
+		// 	int kmax=0;
+		// 	for(int k=1;k<=4;k++) if(sw[k]) {tsw[k]=t-tswpre[k];}
+		// 	for(int k=1;k<=4;k++) if(tsw[k]>tsw[kmax]) {kmax=k;}
 		// 	sw[kmax]=0;
 		// 	swing_count--;
-		// }	//stop swing a leg when lose balance
+		// }	//stop swing a leg when flying (manage data for better figure)
 
 
 		for(int k=1;k<=4;k++) GP[k]=load[k];

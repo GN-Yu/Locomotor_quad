@@ -7,7 +7,7 @@ set ylabel 'total load'
 # Axes ranges
 set xrange [0:10]
 set yrange [-1:1]
-set xtics 0,0.5,20
+set xtics 0,0.1,20
 set ytics -1,0.1,1
 set grid
 # Plot
