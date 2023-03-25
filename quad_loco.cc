@@ -201,8 +201,10 @@ int main(int argc,char** argv)
 	double tsw[5]={};
 
 	double kr=0.5;	//damp of rotation
-	int inhib=0;	//indicator of contra/same side inhibitions
-	int diff_kv=0;
+
+	int swing_inhib_ipsi=0;	//indicator of ipsilateral inhibitions
+	int swing_inhib_contra=0; //indicator of contralateral inhibitions
+	int diff_kv=0;	//an interpretation of diagonal swing excitation using different balance parameters
 
 	//initialize parameters
 	for(int i=1;i<argc;i++)
@@ -221,8 +223,9 @@ int main(int argc,char** argv)
         else if(strcmp(argv[i],"-tsw0")==0) Tswcini=atof(argv[++i]);
 		else if(strcmp(argv[i],"-tsw1")==0) Tswcfin=atof(argv[++i]);
 		else if(strcmp(argv[i],"-kr")==0) kr=atof(argv[++i]);
+		else if(strcmp(argv[i],"-ipsi_sw_inhib")==0) {swing_inhib_ipsi=1;}
+		else if(strcmp(argv[i],"-contra_sw_inhib")==0) {swing_inhib_contra=1;}
 		else if(strcmp(argv[i],"-diff_kv")==0) {diff_kv=1;}
-		else if(strcmp(argv[i],"-inhib")==0) {inhib=1;}
 		else if(strcmp(argv[i],"-cor")==0) {cor=1;}
 		else if(strcmp(argv[i],"-i")==0) {ini=1;}
 		else if(strcmp(argv[i],"-slowi")==0) {ini=2;}
@@ -491,7 +494,7 @@ int main(int argc,char** argv)
 
 		for(int k=1;k<=4;k++) if(!sw[k]) if(GP[k]>load[k] && load[k]<Gu)
 		{
-			//if(inhib) if(sw[contralateral[k]]==1 || sw[ipsilateral[k]]==1) {continue;}
+			//if(swing_inhib_contra) if(sw[contralateral[k]]==1 || sw[ipsilateral[k]]==1) {continue;}
 			sw[k]=1;
 			swing_count++;
 			tswpre[k]=t;
@@ -502,11 +505,8 @@ int main(int argc,char** argv)
 			sw[k]=1;
 			swing_count++;
             tswpre[k]=t;
-			if(inhib && k<=2)
-			{
-				//if(sw[contralateral[k]]==1) {sw[contralateral[k]]=0; swing_count--;}
-				if(sw[ipsilateral[k]]==1) {sw[ipsilateral[k]]=0; swing_count--;}
-			}
+			if(swing_inhib_ipsi && k<=2) if(sw[ipsilateral[k]]==1) {sw[ipsilateral[k]]=0; swing_count--;}
+			if(swing_inhib_contra) if(sw[contralateral[k]]==1) {sw[contralateral[k]]=0; swing_count--;}
 		}	//strong lifting conditions
 
 		double balance=total_load>0? (Gpre-total_load)/dt:0;
