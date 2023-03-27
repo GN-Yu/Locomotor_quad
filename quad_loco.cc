@@ -80,6 +80,19 @@ void update_F(double xfh[], double yfh[], double xc, double yc, double F[][5]) {
     F[4][1]=(u2*v3-u3*v2)/W1;
 }
 
+int positive_load_check(int k,int swing_count,int sw[],double F[][5]){
+	//check if limb k has positive load after landing
+	int k_pos=1;
+	if(swing_count == 2){
+		int s=1;
+		while(!sw[s] || s==k) s++;
+		if(F[k][s]<0.) k_pos=0;
+	}
+	else if(swing_count==1 && F[k][0]<0.) k_pos=0;
+
+	return k_pos;
+}
+
 void update_corrected_swing_target(double theta,double vx,double vy,double vexp,double xfh0[],double yfh0[],double xfh1[],double yfh1[]){
 	//calculate corrections of limb positionings when swing
 	double vtor=vx*(yfh0[1]-yfh0[4])/D - vy*(xfh0[1]-xfh0[4])/D;
@@ -481,23 +494,24 @@ int main(int argc,char** argv)
 
 		for(int k=1;k<=4;k++) if(sw[k]) if(t-tswpre[k]>=Tswc) 
 		{
-            if(swing_count==2)
-			{
-				int s=1;
-				while(!sw[s] || s==k) {s++;}
-				if(F[k][s]<0.) continue;
-			}
-			else if(swing_count==1 && F[k][0]<0.) continue;
+			if(!positive_load_check(k,swing_count,sw,F)) continue;
 			sw[k]=0;
 			swing_count--;
 		}	//stop swing a leg after specific time, and skip if it gets negative load after landing
 
 		for(int k=1;k<=4;k++) if(!sw[k]) if(GP[k]>load[k] && load[k]<Gu)
 		{
-			//if(swing_inhib_contra) if(sw[contralateral[k]]==1 || sw[ipsilateral[k]]==1) {continue;}
 			sw[k]=1;
 			swing_count++;
 			tswpre[k]=t;
+			if(swing_inhib_ipsi && k<=2 && sw[ipsilateral[k]] && positive_load_check(ipsilateral[k],swing_count,sw,F)) 
+			{
+				sw[ipsilateral[k]]=0; swing_count--;
+			}
+			if(swing_inhib_contra && sw[contralateral[k]] && positive_load_check(contralateral[k],swing_count,sw,F)) 
+			{
+				sw[contralateral[k]]=0; swing_count--;
+			}
 		}	//weak lifting conditions
 
 		for(int k=1;k<=4;k++) if(!sw[k]) if(load[k]<0 || d[k]>DM[k])
@@ -505,8 +519,14 @@ int main(int argc,char** argv)
 			sw[k]=1;
 			swing_count++;
             tswpre[k]=t;
-			if(swing_inhib_ipsi && k<=2) if(sw[ipsilateral[k]]==1) {sw[ipsilateral[k]]=0; swing_count--;}
-			if(swing_inhib_contra) if(sw[contralateral[k]]==1) {sw[contralateral[k]]=0; swing_count--;}
+			if(swing_inhib_ipsi && k<=2 && sw[ipsilateral[k]] && positive_load_check(ipsilateral[k],swing_count,sw,F)) 
+			{
+				sw[ipsilateral[k]]=0; swing_count--;
+			}
+			if(swing_inhib_contra && sw[contralateral[k]] && positive_load_check(contralateral[k],swing_count,sw,F)) 
+			{
+				sw[contralateral[k]]=0; swing_count--;
+			}
 		}	//strong lifting conditions
 
 		double balance=total_load>0? (Gpre-total_load)/dt:0;
@@ -520,13 +540,8 @@ int main(int argc,char** argv)
 			int kmax=0;
 			for(int k=1;k<=4;k++) if(sw[k]) {tsw[k]=t-tswpre[k];}
 			for(int k=1;k<=4;k++) if(tsw[k]>tsw[kmax]) {kmax=k;}
-			int kmax_positiveload=1;
-            if(swing_count==2)
-			{
-				int s=1; while(!sw[s] || s==kmax) s++;
-				if(F[kmax][s]<0.) kmax_positiveload=0;
-			}
-			else if(swing_count==1 && F[kmax][0]<0.) kmax_positiveload=0;
+			
+			int kmax_positiveload=positive_load_check(kmax,swing_count,sw,F);
 			
 			double losing_balance_threshold[5]={0,kv,kv,kv,kv};
 			if(diff_kv) for(int k=1;k<=4;k++)
@@ -616,7 +631,7 @@ int main(int argc,char** argv)
 
 			double dutyfactor=(stridetime==0? 0:(100*ttst[k]/stridetime));
 
-			if(t>10 && dutyfactor-dutyfacor_pre>10) return 0;
+			if(t>10 && abs(dutyfactor-dutyfacor_pre)>90) return 0;
 
 			if(t>=1 && stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<(stridetime-ttst[k])<<'\t'<<dutyfactor<<endl;
 			//if(stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<ttsw[k]<<'\t'<<dutyfactor<<endl;

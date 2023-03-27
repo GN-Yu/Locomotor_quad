@@ -1,13 +1,14 @@
 # A To-do List
 
 ## Add features
-- different balance threshold for front and hind legs' landing
-
+- ~~different balance threshold for front and hind legs' landing~~
+- left-right swing inhibitions
+- circle figures for the phase diffenrence of limbs
 
 ## User interactivity
-- set parameters --> run --> change parameters --> rerun
+- ~~set parameters --> run --> change parameters --> rerun~~
 
-- a GUI? 
+- ~~a GUI?~~
 
 ## Add more comments
 - properties in the very front

@@ -19,15 +19,31 @@ def update_command_display(cmd):
     command_display.delete(1.0, tk.END)
     command_display.insert(tk.END, cmd)
 
+model_process = None
+
 def run_model(args):
+    global model_process
+    if model_process is not None:
+        model_process.terminate()
     cmd = f"g++ -O2 quad_loco.cc -o quad_loco.o && ./quad_loco.o{args_to_string(args)} >dat 2>ppp"
     update_command_display(cmd)
-    os.system(cmd)
+    model_process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+gnuplot_process = None
 
 def run_gnuplot(plot_file):
-    cmd = f"gnuplot -p -e 'load \"{plot_file}\"'"
+    global gnuplot_process
+    if gnuplot_process is not None:
+        stop_gnuplot()
+    cmd = f"gnuplot -persist \"{plot_file}\""
     update_command_display(cmd)
-    subprocess.Popen(cmd, shell=True)
+    gnuplot_process = subprocess.Popen(cmd, shell=True)
+
+def stop_gnuplot():
+    global gnuplot_process
+    if gnuplot_process is not None:
+        gnuplot_process.terminate()
+        gnuplot_process = None
 
 def save_and_run():
     config = {}
@@ -156,9 +172,18 @@ for idx, (label, plot_file) in enumerate(plot_buttons):
     plot_button = ttk.Button(button_frame, text=label, command=lambda plot_file=plot_file: run_gnuplot(plot_file))
     plot_button.grid(row=row+1, column=col, padx=5, pady=5)
 
+preview_button = ttk.Button(button_frame, text="Animation Preview", command=lambda plot_file="ppp": run_gnuplot(plot_file), width=50)
+preview_button.grid(row=row+8, column=0, columnspan=3, padx=5, pady=5)
+
+# preview_button = ttk.Button(button_frame, text="Animation Preview", command=lambda plot_file="ppp": run_gnuplot(plot_file), width=30)
+# preview_button.grid(row=row+8, column=0, columnspan=2, padx=5, pady=5)
+
+# stop_preview_button = ttk.Button(button_frame, text="Stop Preview", command=stop_gnuplot, width=20)
+# stop_preview_button.grid(row=row+8, column=2, columnspan=1, padx=5, pady=5)
+# (stop button not working)
 
 command_display_frame = ttk.Frame(root)
-command_display_frame.grid(row=row+8, column=0, columnspan=2, padx=5, pady=5)
+command_display_frame.grid(row=row+9, column=0, columnspan=2, padx=5, pady=5)
 
 command_display_label = ttk.Label(command_display_frame, text="Running Command:", font=title_font)
 command_display_label.grid(row=0, column=0, padx=5, pady=5)
