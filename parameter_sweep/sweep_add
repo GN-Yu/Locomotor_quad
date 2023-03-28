@@ -1,0 +1,16 @@
+rm data/durmd*
+rm data/durmu*
+
+time(
+	seq .02 .01 .18 | parallel -j 8 './walk.o -T 100 -v0 20 -v1 0 -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .04 -tsw1 {} -kr .55 -contra_sw_inhib -presetTROT -out_swp data/durmd{} >/dev/null 2>/dev/null'
+	wait
+	echo "middle down star sweep done"
+)
+
+time(
+	seq .02 .01 .18 | parallel -j 8 './walk.o -T 100 -v0 14 -v1 38 -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .04 -tsw1 {} -kr .55 -contra_sw_inhib -presetTROT -out_swp data/durmu{} >/dev/null 2>/dev/null'
+	wait
+	echo "middle up star sweep done"
+)
+
+gnuplot DFplot1.plot

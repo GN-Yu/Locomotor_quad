@@ -2,24 +2,31 @@ g++ -O2 quad_loco.cc -o walk.o
 rm data/*
 
 time(
-	seq 1 2 40 | parallel -j 8 './walk.o -T 200 -v0 {} -v1 {} -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .001 -tsw1 .15 -kr 1.5 -contra_sw_inhib -presetTROT -out_swp data/durlr{} >/dev/null 2>/dev/null'
+	seq 1 .6 40 | parallel -j 8 './walk.o -T 100 -v0 {} -v1 {} -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .001 -tsw1 .15 -kr 1.4 -contra_sw_inhib -presetTROT -out_swp data/durlrB{} >/dev/null 2>/dev/null'
 	#./walk.o -T 200 -v0 $v -v1 $v -Gu0 -10 -Gu1 -10 -kv0 1000 -kv1 1000 -tsw0 .01 -tsw1 .1 -kr 0.3 -presetTROT -out_swp data/durlr$v -swpini ini/force$v >/dev/null 2>/dev/null &
 	wait
-	echo "left to right sweep done"
+	echo "left to right sweep B done"
 )
-
 
 time(
-	seq .001 .02 .151 | parallel -j 8 './walk.o -T 200 -v0 25 -v1 0 -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .001 -tsw1 {} -kr 1.5 -contra_sw_inhib -presetTROT -out_swp data/durmd{} >/dev/null 2>/dev/null'
+	seq 1 .6 40 | parallel -j 8 './walk.o -T 100 -v0 {} -v1 {} -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .001 -tsw1 .15 -kr .55 -contra_sw_inhib -presetTROT -out_swp data/durlrA{} >/dev/null 2>/dev/null'
+	#./walk.o -T 200 -v0 $v -v1 $v -Gu0 -10 -Gu1 -10 -kv0 1000 -kv1 1000 -tsw0 .01 -tsw1 .1 -kr 0.3 -presetTROT -out_swp data/durlr$v -swpini ini/force$v >/dev/null 2>/dev/null &
 	wait
-	echo "middle down star sweep done"
+	echo "left to right sweep A done"
 )
 
 
-time(
-	seq .001 .02 .151 | parallel -j 8 './walk.o -T 200 -v0 10 -v1 40 -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .001 -tsw1 {} -kr 1.5 -contra_sw_inhib -presetTROT -out_swp data/durmu{} >/dev/null 2>/dev/null'
-	wait
-	echo "middle up star sweep done"
-)
+# time(
+# 	seq .001 .005 .151 | parallel -j 8 './walk.o -T 100 -v0 16 -v1 0 -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .001 -tsw1 {} -kr .6 -contra_sw_inhib -presetTROT -out_swp data/durmd{} >/dev/null 2>/dev/null'
+# 	wait
+# 	echo "middle down star sweep done"
+# )
+
+
+# time(
+# 	seq .001 .005 .151 | parallel -j 8 './walk.o -T 100 -v0 14 -v1 40 -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .001 -tsw1 {} -kr .6 -contra_sw_inhib -presetTROT -out_swp data/durmu{} >/dev/null 2>/dev/null'
+# 	wait
+# 	echo "middle up star sweep done"
+# )
 
 gnuplot DFplot1.plot

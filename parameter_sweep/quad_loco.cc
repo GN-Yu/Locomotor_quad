@@ -573,14 +573,16 @@ int main(int argc,char** argv)
 		// 		swing_count--;
 		// 	}
 		// }	//stop swing a leg when lose balance
-		// if(swing_count==4)
-		// {
-		// 	int kmax=0;
-		// 	for(int k=1;k<=4;k++) if(sw[k]) {tsw[k]=t-tswpre[k];}
-		// 	for(int k=1;k<=4;k++) if(tsw[k]>tsw[kmax]) {kmax=k;}
-		// 	sw[kmax]=0;
-		// 	swing_count--;
-		// }	//stop swing a leg when flying (manage data for better figure)
+		
+
+		if(swing_count==4)
+		{
+			int kmax=0;
+			for(int k=1;k<=4;k++) if(sw[k]) {tsw[k]=t-tswpre[k];}
+			for(int k=1;k<=4;k++) if(tsw[k]>tsw[kmax]) {kmax=k;}
+			sw[kmax]=0;
+			swing_count--;
+		}	//stop swing a leg when flying (manage data for better figure)
 
 
 		for(int k=1;k<=4;k++) GP[k]=load[k];
@@ -631,7 +633,7 @@ int main(int argc,char** argv)
 
 			double dutyfactor=(stridetime==0? 0:(100*ttst[k]/stridetime));
 
-			if(t>10 && abs(dutyfactor-dutyfacor_pre)>90) return 0;
+			if(t>10 && abs(dutyfactor-dutyfacor_pre)>50) return 0;
 
 			if(t>=1 && stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<(stridetime-ttst[k])<<'\t'<<dutyfactor<<endl;
 			//if(stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<ttsw[k]<<'\t'<<dutyfactor<<endl;
