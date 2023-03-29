@@ -1,15 +1,17 @@
+cpu_number=$(nproc)
+
 g++ -O2 quad_loco.cc -o walk.o
 rm data/*
 
 time(
-	seq 1 .6 40 | parallel -j 8 './walk.o -T 100 -v0 {} -v1 {} -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .001 -tsw1 .15 -kr 1.4 -contra_sw_inhib -presetTROT -out_swp data/durlrB{} >/dev/null 2>/dev/null'
+	seq 1 .6 40 | parallel -j $cpu_number './walk.o -T 100 -v0 {} -v1 {} -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .001 -tsw1 .15 -kr 1.4 -contra_sw_inhib -presetTROT -out_swp data/durlrB{} >/dev/null 2>/dev/null'
 	#./walk.o -T 200 -v0 $v -v1 $v -Gu0 -10 -Gu1 -10 -kv0 1000 -kv1 1000 -tsw0 .01 -tsw1 .1 -kr 0.3 -presetTROT -out_swp data/durlr$v -swpini ini/force$v >/dev/null 2>/dev/null &
 	wait
 	echo "left to right sweep B done"
 )
 
 time(
-	seq 1 .6 40 | parallel -j 8 './walk.o -T 100 -v0 {} -v1 {} -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .001 -tsw1 .15 -kr .55 -contra_sw_inhib -presetTROT -out_swp data/durlrA{} >/dev/null 2>/dev/null'
+	seq 1 .6 40 | parallel -j $cpu_number './walk.o -T 100 -v0 {} -v1 {} -Gu0 -10 -Gu1 -10 -kv0 1e10 -kv1 1e10 -tsw0 .001 -tsw1 .15 -kr .55 -contra_sw_inhib -presetTROT -out_swp data/durlrA{} >/dev/null 2>/dev/null'
 	#./walk.o -T 200 -v0 $v -v1 $v -Gu0 -10 -Gu1 -10 -kv0 1000 -kv1 1000 -tsw0 .01 -tsw1 .1 -kr 0.3 -presetTROT -out_swp data/durlr$v -swpini ini/force$v >/dev/null 2>/dev/null &
 	wait
 	echo "left to right sweep A done"

@@ -1,0 +1,12 @@
+#!/bin/bash
+# A simple variable example
+myvariable=Hello
+anothervar=Fred
+
+cpu_number=$(nproc)
+echo $myvariable $anothervar
+
+echo $cpu_number
+
+# sampledir=/etc
+# ls $sampledir

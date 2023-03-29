@@ -424,7 +424,7 @@ int main(int argc,char** argv)
 		if(hc<0) 
 		{
 			//cerr<<"fall"<<endl;
-			break;
+			// break;
 		}
 		else if(total_load<0)
 		{
@@ -633,7 +633,7 @@ int main(int argc,char** argv)
 
 			double dutyfactor=(stridetime==0? 0:(100*ttst[k]/stridetime));
 
-			if(t>10 && abs(dutyfactor-dutyfacor_pre)>50) return 0;
+			// if(t>10 && abs(dutyfactor-dutyfacor_pre)>99) return 0;
 
 			if(t>=1 && stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<(stridetime-ttst[k])<<'\t'<<dutyfactor<<endl;
 			//if(stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<ttsw[k]<<'\t'<<dutyfactor<<endl;
