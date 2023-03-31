@@ -1,23 +1,27 @@
-set title "yerrors in polar mode"
+reset session
+set title ""
 
 $DATA << EOD
-0   1.3 0.2
-30  0.9 0.1
-60  0.7 0.1
-90  1.0 0.3
-120 1.1 0.1
-150 0.5 0.1
-180 1.2 0.2
+0  1
+90 1
+320 1
+230 1
 EOD
 
 set polar
+set theta clockwise top
 set angles degrees
-set grid polar 15. lt -1 dt 0 lw 0.5
+set grid polar 45. lt -1 dt 0 lw 1
+unset xlabel
+unset ylabel
 unset border
+set ttics 0,90,360
 unset xtics
 unset ytics
 unset raxis
-set yrange [0:1.5]
-set size ratio 0.5
+set rtics 0,1,1
+set format r ''
+set rrange [0:1.04]
+set size ratio -1
 
-plot $DATA with yerrorbars lw 1.5 title "polar error bars"
+plot 1.03 lt -1 title "", $DATA lw 1.5 title ""
