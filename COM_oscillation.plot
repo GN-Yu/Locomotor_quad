@@ -1,0 +1,1 @@
+# ocilliation of the COM in a stride

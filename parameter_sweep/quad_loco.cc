@@ -201,6 +201,7 @@ int main(int argc,char** argv)
 
     double Zx, Zy;	//distance to diagonal when two limbs supporting
     double hc=H;    //height of the COM
+	double R;
 
 	double d[5]={};	//the distance from a limb to its shoulder or hip
 
@@ -378,6 +379,8 @@ int main(int argc,char** argv)
 		update_F(xfh, yfh, xc, yc, F);
 
 		Zx=0; Zy=0;
+		R=H;
+
         if(swing_count==0)
         {
             for(int k=1;k<=4;k++) load[k]=F[k][0];
@@ -398,7 +401,7 @@ int main(int argc,char** argv)
             double z=(xc-x2)*a+(yc-y2)*b;
             double vz=vx*a+vy*b;
             Zx=z*a; Zy=z*b;
-            double R=sqrt(z*z+hc*hc);
+            R=sqrt(z*z+hc*hc);
             total_load=hc/R-vz*vz/R/g;
             double d12=hypot(x2-x1,y2-y1);
             double r2=((xc-x2)*(x1-x2)+(yc-y2)*(y1-y2))/d12;
@@ -415,7 +418,7 @@ int main(int argc,char** argv)
             double z=(xc-x1)*a+(yc-y1)*b;
             double vz=vx*a+vy*b;
             Zx=-z*a; Zy=-z*b;
-            double R=sqrt(z*z+hc*hc);
+            R=sqrt(z*z+hc*hc);
             total_load=hc/R-vz*vz/R/g;
             load[k1]=total_load;
             hc-=z/hc*vz*dt;
@@ -424,7 +427,7 @@ int main(int argc,char** argv)
 		if(hc<0) 
 		{
 			//cerr<<"fall"<<endl;
-			// break;
+			break;
 		}
 		else if(total_load<0)
 		{
@@ -458,8 +461,8 @@ int main(int argc,char** argv)
 		xc+=vx*dt;
 		yc+=vy*dt;
 		theta+=omega*dt;
-		vx+=((Fx[1]+Fx[2]+Fx[3]+Fx[4])/tau-vx/tau+g*Zx/H)*dt;
-		vy+=((Fy[1]+Fy[2]+Fy[3]+Fy[4])/tau-vy/tau+g*Zy/H)*dt;
+		vx+=((Fx[1]+Fx[2]+Fx[3]+Fx[4])/tau-vx/tau+g*Zx/R)*dt;
+		vy+=((Fy[1]+Fy[2]+Fy[3]+Fy[4])/tau-vy/tau+g*Zy/R)*dt;
 		vv=hypot(vx,vy);
 
 		double tauvv=1;

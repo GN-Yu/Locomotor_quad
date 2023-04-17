@@ -1,6 +1,7 @@
 reset session
 set title ""
 
+# set the key frame data
 $DATA << EOD
 0  1
 90 1

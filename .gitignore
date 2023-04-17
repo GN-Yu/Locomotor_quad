@@ -6,6 +6,8 @@ parameter_sweep/ini/
 
 parameter_sweep_eg/data/
 
+# VS code gitignore
+*.code-workspace
 
 # C++ gitignore
 # Prerequisites
