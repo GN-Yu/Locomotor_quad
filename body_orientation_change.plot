@@ -1,1 +1,1 @@
-# body angle chanfe during a stride
+# body angle change during a stride

@@ -163,6 +163,7 @@ int main(int argc,char** argv)
 	int newini=0;
 	int cor=0;
 	int ani_out=0;
+	int is_key_frame=0;
 	int stridedata_out=0;
 	int cookini=0;
 	int iniWALK=0;
@@ -259,9 +260,8 @@ int main(int argc,char** argv)
 	}
 
 	//output settings
-	ofstream out_timers(fdur);
+	ofstream out_key_frames_data(fdur);
 	ofstream out_ini(inifiles[newini]);
-	// ofstream out_timers("strideinfo");
 
 	if(ani_out) plotcmd_head();
 	if(nicepic) {start_out_time=5;}
@@ -577,7 +577,6 @@ int main(int argc,char** argv)
 		// 	}
 		// }	//stop swing a leg when lose balance
 		
-
 		if(swing_count==4)
 		{
 			int kmax=0;
@@ -587,10 +586,6 @@ int main(int argc,char** argv)
 			swing_count--;
 		}	//stop swing a leg when flying (manage data for better figure)
 
-
-		for(int k=1;k<=4;k++) GP[k]=load[k];
-		Gpre=total_load;
-
 		//falling indicator: if there is at least one leg having negative load for a long time (say 0.2s), it is falling
 		// static double fallpre=0;
 		// int iter_nonneg;
@@ -599,25 +594,13 @@ int main(int argc,char** argv)
 		// if(iter_nonneg<4) {if(t-fallpre>0.2) break;}
 		// else fallpre=t;
 
-		//output data
-		if(ani_out && int(t/dt)%int(DT/dt)==0)
-		{
-			cout<<t<<'\t'<<xc<<'\t'<<yc<<'\t'<<vx<<'\t'<<vy<<'\t'<<total_load;
-			for(int i=1;i<=4;i++) cout<<'\t'<<load[i];
-			for(int i=1;i<=4;i++) cout<<'\t'<<(sw[i]?i:0);
-			// cout<<'\t'<<deltal<<'\t'<<deltar;
-			cout<<endl;
-			
-			// animation frames commands using gnuplot
-			plotcmd_frame(sw,xc,yc,hc,xf,yf,xh,yh,xfh,yfh,xfh0,yfh0);
-		}
-
-		//output timers
+		// swing stance tracker
 		static int swpre[5];
 		static double ttswpre[5]={};
 		double ttsw[5]={};
 		static double ttstpre[5]={};
 		double ttst[5]={};
+		int state_switch_flag[5]={0,0,0,0,0};	// 0 means no switch, 1 means stance to swing, -1 means swing to stance
 		static double stridepre=0;
 		static double stridetime=0;
 		static double dutyfacor_pre=0;
@@ -626,30 +609,60 @@ int main(int argc,char** argv)
 		{
 			ttsw[k]=t-ttswpre[k];
 			ttstpre[k]=t; 
+			state_switch_flag[k]=-1;
+			is_key_frame = 1;
 			if(k==1) { stridetime=t-stridepre; stridepre=t; }			
-			//if(stridedata_out==1 && stridepre!=0) out_timers<<t<<'\t'<<vv<<'\t'<<k<<'\t'<<ttsw[k]<<'\t'<<-1<<'\t'<<1/stridetime<<endl;
+			//if(stridedata_out==1 && stridepre!=0) out_key_frames_data<<t<<'\t'<<vv<<'\t'<<k<<'\t'<<ttsw[k]<<'\t'<<-1<<'\t'<<1/stridetime<<endl;
 		}
 		for(int k=1;k<=4;k++) if(!swpre[k] && sw[k])	//start swing tracker
 		{
 			ttst[k]=t-ttstpre[k];
 			ttswpre[k]=t;
+			state_switch_flag[k]=1;
+			is_key_frame = 1;
 
 			double dutyfactor=(stridetime==0? 0:(100*ttst[k]/stridetime));
 
 			if(t>10 && abs(dutyfactor-dutyfacor_pre)>80) return 0;
 
-			if(t>=1 && stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<(stridetime-ttst[k])<<'\t'<<dutyfactor<<'\t'<<xc<<'\t'<<yc<<'\t'<<swing_count<<'\t'<<theta<<endl;
-			//if(stridepre!=0) out_timers<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<ttsw[k]<<'\t'<<dutyfactor<<endl;
+			if(t>=1 && stridepre!=0) {
+				out_key_frames_data<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<(stridetime-ttst[k])<<'\t'<<dutyfactor<<endl;
+			}
+
 			// Limb (k) is starts swing at time (t) with parameters (F0), (kv), (Gu) and (Tsw);
 			// it has velocity (vv), stance time (ttst[k]), previous swing time (ttsw[k]) and duty factor (dutyfactor).
+
+			// simulation data saved as: 1 (k),  2 (t),  3 (F0),  4 (kv),  5 (Gu),  6 (Tsw), 7(vv), 8 (ttst[k]), 9 (ttsw[k]), 10 (dutyfactor)
 			
-			//if(stridepre!=0) out_timers<<kv<<'\t'<<F0<<'\t'<<vv<<'\t'<<k<<'\t'<<-1<<'\t'<<ttst[k]<<'\t'<<dutyfactor<<endl;
-			//if(stridepre!=0 && abs(dutyfactor-dutyfacor_pre)<0.15 && abs(vv-vvpre)<0.5) out_timers<<Tswc<<'\t'<<F0<<'\t'<<vv<<'\t'<<k<<'\t'<<-1<<'\t'<<ttst[k]<<'\t'<<dutyfactor<<endl;
 			dutyfacor_pre=dutyfactor;
-			vvpre=vv;
-			//if(stridedata_out==1 && stridepre!=0) out_timers<<t<<'\t'<<vv<<'\t'<<k<<'\t'<<-1<<'\t'<<ttst[k]<<'\t'<<1/stridetime<<endl; && abs(Tswc-ttsw[k])<0.04
+			//vvpre=vv;
+			//if(stridedata_out==1 && stridepre!=0) out_key_frames_data<<t<<'\t'<<vv<<'\t'<<k<<'\t'<<-1<<'\t'<<ttst[k]<<'\t'<<1/stridetime<<endl; && abs(Tswc-ttsw[k])<0.04
 		}
+		
+		
+		// output data
+		if(int(t/dt)%int(DT/dt)==0 || is_key_frame)
+		{
+			cout<<t<<'\t'<<xc<<'\t'<<yc<<'\t'<<vx<<'\t'<<vy<<'\t'<<total_load;
+			for(int i=1;i<=4;i++) cout<<'\t'<<load[i];
+			for(int i=1;i<=4;i++) cout<<'\t'<<(sw[i]?i:0);
+			for(int i=1;i<=4;i++) cout<<'\t'<<state_switch_flag[i];
+			cout<<'\t'<<theta<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc;
+			// cout<<'\t'<<deltal<<'\t'<<deltar;
+			cout<<endl;
+			
+			// animation frames commands using gnuplot
+			if(ani_out) plotcmd_frame(sw,xc,yc,hc,xf,yf,xh,yh,xfh,yfh,xfh0,yfh0);
+		}
+
+		// set recorders
+		Gpre=total_load;
+		for(int k=1;k<=4;k++) GP[k]=load[k];
 		for(int k=1;k<=4;k++) swpre[k]=sw[k];
+
+		// reset temp parameters
+		for(int k=1;k<=4;k++) state_switch_flag[k]=0;
+		is_key_frame=0;
 	}
 	
 	//output initial conditions for the future
