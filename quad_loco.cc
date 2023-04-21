@@ -648,6 +648,7 @@ int main(int argc,char** argv)
 			for(int i=1;i<=4;i++) cout<<'\t'<<(sw[i]?i:0);
 			for(int i=1;i<=4;i++) cout<<'\t'<<state_switch_flag[i];
 			cout<<'\t'<<theta<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc;
+			cout<<'\t'<<is_key_frame;
 			// cout<<'\t'<<deltal<<'\t'<<deltar;
 			cout<<endl;
 			
