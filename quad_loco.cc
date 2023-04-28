@@ -123,12 +123,12 @@ void plotcmd_head() {
 	//cerr<<"set view equal xyz"<<endl;
 }
 
-void plotcmd_frame(int sw[],double xc,double yc,double hc,double xf,double yf,double xh,double yh,double xfh[],double yfh[],double xfh0[],double yfh0[]){
+void plotcmd_frame(double t,int sw[],double xc,double yc,double hc,double xf,double yf,double xh,double yh,double xfh[],double yfh[],double xfh0[],double yfh0[]){
 	cerr<<"unset object"<<endl;
 	cerr<<"unset arrow"<<endl;
 	cerr<<"set xrange ["<<xc-20<<':'<<xc+20<<"]"<<endl;
 	cerr<<"set yrange ["<<yc-20<<':'<<yc+20<<"]"<<endl;
-	//cerr<<"set title \"V="<<int(vv)<<'\"'<<endl;
+	cerr<<"set title \"t="<<t<<'\"'<<endl;
 	for(int i=1;i<=4;i++) {cerr<<"set object "<<i<<" circle front at "<<xfh[i]<<','<<yfh[i]<<",0 size "<<.2
 							<<" fc \""<<colors[i]<<"\" fs "<<(sw[i] ? "empty" : "solid")<<endl;}
 
@@ -426,12 +426,12 @@ int main(int argc,char** argv)
 
 		if(hc<0) 
 		{
-			//cerr<<"fall"<<endl;
+			cerr<<"fall"<<endl;
 			break;
 		}
 		else if(total_load<0)
 		{
-			//cerr<<"fly"<<endl;
+			cerr<<"fly"<<endl;
 			break;
 		}
 
@@ -460,7 +460,8 @@ int main(int argc,char** argv)
 
 		xc+=vx*dt;
 		yc+=vy*dt;
-		theta+=omega*dt;
+		// theta+=omega*dt;
+		theta=atan2(vy,vx);
 		vx+=((Fx[1]+Fx[2]+Fx[3]+Fx[4])/tau-vx/tau+g*Zx/R)*dt;
 		vy+=((Fy[1]+Fy[2]+Fy[3]+Fy[4])/tau-vy/tau+g*Zy/R)*dt;
 		vv=hypot(vx,vy);
@@ -478,19 +479,19 @@ int main(int argc,char** argv)
 		double M=0;
 		for(int k=1;k<=4;k++) {M+=(xfh[k]-xc)*Fy[k]-(yfh[k]-yc)*Fx[k];}
 
-		static double psipre[5]={};
-		double psi[5]={};
-		double MA=0;
-		for(int k=1;k<=4;k++)
-		{
-			double hh=hypot(yfh0[k]-yfh[k],xfh0[k]-xfh[k]);
-			psi[k]=hh*sin(atan2(yfh0[k]-yfh[k],xfh0[k]-xfh[k])-theta);
-			MA+=kr*(psi[k]-psipre[k])/dt; //+kr*kr/4/I*phi[k];
-			psipre[k]=psi[k];
-		}
+		// static double psipre[5]={};
+		// double psi[5]={};
+		// double MA=0;
+		// for(int k=1;k<=4;k++)
+		// {
+		// 	double hh=hypot(yfh0[k]-yfh[k],xfh0[k]-xfh[k]);
+		// 	psi[k]=hh*sin(atan2(yfh0[k]-yfh[k],xfh0[k]-xfh[k])-theta);
+		// 	MA+=kr*(psi[k]-psipre[k])/dt; //+kr*kr/4/I*phi[k];
+		// 	psipre[k]=psi[k];
+		// }
 		
-		omega+=(M/I-omega+MA)*dt/tau;
-		// omega+=(M/I-omega)*dt/tau;
+		// omega+=(M/I-omega+MA)*dt/tau;
+		// // omega+=(M/I-omega)*dt/tau;
 
 		
 		for(int k=1;k<=4;k++) tsw[k]=0;
@@ -623,7 +624,7 @@ int main(int argc,char** argv)
 
 			double dutyfactor=(stridetime==0? 0:(100*ttst[k]/stridetime));
 
-			if(t>10 && abs(dutyfactor-dutyfacor_pre)>80) return 0;
+			if(t>10 && abs(dutyfactor-dutyfacor_pre)>1000) return 0;
 
 			if(t>=1 && stridepre!=0) {
 				out_key_frames_data<<k<<'\t'<<t<<'\t'<<F0<<'\t'<<kv<<'\t'<<Gu<<'\t'<<Tswc<<'\t'<<vv<<'\t'<<ttst[k]<<'\t'<<(stridetime-ttst[k])<<'\t'<<dutyfactor<<endl;
@@ -653,7 +654,7 @@ int main(int argc,char** argv)
 			cout<<endl;
 			
 			// animation frames commands using gnuplot
-			if(ani_out) plotcmd_frame(sw,xc,yc,hc,xf,yf,xh,yh,xfh,yfh,xfh0,yfh0);
+			if(ani_out) plotcmd_frame(t,sw,xc,yc,hc,xf,yf,xh,yh,xfh,yfh,xfh0,yfh0);
 		}
 
 		// set recorders
