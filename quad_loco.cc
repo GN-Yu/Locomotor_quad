@@ -453,15 +453,21 @@ int main(int argc,char** argv)
 		
 		for(int i=1;i<=4;i++) {d[i]=hypot(xfh0[i]-xfh[i],yfh0[i]-yfh[i]);}
 
-		if(!sw[1] && d[1]>0.) { Fx[1]=FL*(xfh0[1]-xfh[1])/d[1]; Fy[1]=FL*(yfh0[1]-yfh[1])/d[1]; }
-		if(!sw[2] && d[2]>0.) { Fx[2]=FR*(xfh0[2]-xfh[2])/d[2]; Fy[2]=FR*(yfh0[2]-yfh[2])/d[2]; }
-		if(!sw[3] && d[3]>0.) { Fx[3]=FL*(xfh0[3]-xfh[3])/d[3]; Fy[3]=FL*(yfh0[3]-yfh[3])/d[3]; }
-		if(!sw[4] && d[4]>0.) { Fx[4]=FR*(xfh0[4]-xfh[4])/d[4]; Fy[4]=FR*(yfh0[4]-yfh[4])/d[4]; }
+		// if(!sw[1] && d[1]>0.) { Fx[1]=FL*(xfh0[1]-xfh[1])/d[1]; Fy[1]=FL*(yfh0[1]-yfh[1])/d[1]; }
+		// if(!sw[2] && d[2]>0.) { Fx[2]=FR*(xfh0[2]-xfh[2])/d[2]; Fy[2]=FR*(yfh0[2]-yfh[2])/d[2]; }
+		// if(!sw[3] && d[3]>0.) { Fx[3]=FL*(xfh0[3]-xfh[3])/d[3]; Fy[3]=FL*(yfh0[3]-yfh[3])/d[3]; }
+		// if(!sw[4] && d[4]>0.) { Fx[4]=FR*(xfh0[4]-xfh[4])/d[4]; Fy[4]=FR*(yfh0[4]-yfh[4])/d[4]; }
+
+		if(!sw[1] && d[1]>0.) { Fx[1]=FL*cos(theta); Fy[1]=FL*sin(theta); }
+		if(!sw[2] && d[2]>0.) { Fx[2]=FR*cos(theta); Fy[2]=FR*sin(theta); }
+		if(!sw[3] && d[3]>0.) { Fx[3]=FL*cos(theta); Fy[3]=FL*sin(theta); }
+		if(!sw[4] && d[4]>0.) { Fx[4]=FR*cos(theta); Fy[4]=FR*sin(theta); }
+
 
 		xc+=vx*dt;
 		yc+=vy*dt;
-		// theta+=omega*dt;
-		theta=atan2(vy,vx);
+		theta+=omega*dt;
+		// theta=atan2(vy,vx);
 		vx+=((Fx[1]+Fx[2]+Fx[3]+Fx[4])/tau-vx/tau+g*Zx/R)*dt;
 		vy+=((Fy[1]+Fy[2]+Fy[3]+Fy[4])/tau-vy/tau+g*Zy/R)*dt;
 		vv=hypot(vx,vy);
@@ -491,7 +497,7 @@ int main(int argc,char** argv)
 		// }
 		
 		// omega+=(M/I-omega+MA)*dt/tau;
-		// // omega+=(M/I-omega)*dt/tau;
+		omega+=(M/I-omega)*dt/tau;
 
 		
 		for(int k=1;k<=4;k++) tsw[k]=0;

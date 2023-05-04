@@ -1,1 +1,1 @@
-{"T": 20, "fps": 550, "v0": 20, "v1": 20, "Gu0": -10, "Gu1": -10, "kv0": 10000000000.0, "kv1": 10000000000.0, "tsw0": 0.02, "tsw1": 0.2, "kr": 0.8, "ipsi_sw_inhib": false, "contra_sw_inhib": true, "diff_kv": false, "presetTROT": true}
+{"T": 100, "fps": 550, "v0": 10, "v1": 10, "Gu0": -10, "Gu1": -10, "kv0": 10000000000.0, "kv1": 10000000000.0, "tsw0": 0.01, "tsw1": 0.03, "kr": 0.8, "ipsi_sw_inhib": false, "contra_sw_inhib": false, "diff_kv": false, "presetTROT": true}

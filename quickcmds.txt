@@ -300,3 +300,6 @@ Model 3: velocity at 40
 ----about 5.0-5.3 s
 
 
+
+---plot duty factor vs time
+plot "dur" u 2:(($10<100 && $10>45)? $10:NaN) w lp
